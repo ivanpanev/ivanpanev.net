@@ -25,6 +25,20 @@ template, and pass criteria are in `docs/reviews/CRITIC.md`; reports are
 committed as `docs/reviews/mN-rK.md`; deferred findings live in
 `docs/reviews/BACKLOG.md`.
 
+## Alternatives considered
+
+- Builder self-review with a checklist: cheap, but shares the builder's
+  blind spots; the round-1 review of Milestone 0 found deterministic script
+  failures and a flawed key-rotation procedure that the builder's own checks
+  had passed.
+- Automated gates only (linters, tests, policy-as-code): necessary and used,
+  but they cannot judge whether an ADR's trade-off is honest or whether a
+  runbook would work at 3 a.m.
+- Operator reviews every change: does not scale to the volume of generated
+  code and defeats the purpose of delegating the build.
+- Review at the end of Phase 1 only: findings would compound across
+  milestones and be far more expensive to fix.
+
 ## Consequences
 
 - Slower milestones; higher confidence. Review reports double as
@@ -32,3 +46,7 @@ committed as `docs/reviews/mN-rK.md`; deferred findings live in
 - The critic cannot reach live cloud accounts; infrastructure milestones are
   judged on plans, rendered manifests, static analysis, and runbooks, and
   live verification steps are recorded for the operator.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F08): added alternatives considered.

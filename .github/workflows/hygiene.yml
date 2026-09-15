@@ -1,12 +1,15 @@
 name: hygiene
 
 # Repository-wide checks that run on every change:
-# - no plaintext secrets (gitleaks over full history on PRs, HEAD on main)
-# - every file matched by a SOPS creation rule is actually encrypted
+# - no plaintext secrets (gitleaks over full history)
+# - every file matched by a .sops.yaml creation rule is encrypted, as judged
+#   by SOPS itself (`sops filestatus`), with the file list derived from
+#   .sops.yaml via scripts/sops-files.sh so CI and the runbook cannot disagree
 # - shell scripts pass shellcheck
 # - no CRLF sneaks into LF-normalised files
 #
-# Third-party actions are pinned to commit SHAs (see ADR-0012).
+# Third-party actions are pinned to commit SHAs (ADR-0012). Renovate keeps
+# the SHAs current.
 
 on:
   push:
@@ -38,17 +41,30 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Every *.enc.* and *.secret.* file carries SOPS metadata
+      - name: Install pinned sops (checksum-verified)
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source scripts/versions.env
+          base="https://github.com/getsops/sops/releases/download/v${PIN_SOPS}"
+          curl -fsSL -o sops "$base/sops-v${PIN_SOPS}.linux.amd64"
+          curl -fsSL -o sums "$base/sops-v${PIN_SOPS}.checksums.txt"
+          grep " sops-v${PIN_SOPS}.linux.amd64\$" sums | sed 's# .*#  sops#' | sha256sum -c -
+          sudo install -m 0755 sops /usr/local/bin/sops
+          sops --version
+      - name: Every file matching a .sops.yaml rule is encrypted
         run: |
           set -euo pipefail
           status=0
+          count=0
           while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            if ! grep -Eq '^sops:|"sops":|^\[sops\]|ENC\[' "$f"; then
-              echo "::error file=$f::file matches a SOPS creation rule but is not encrypted"
+            count=$((count + 1))
+            if ! sops filestatus "$f" | grep -q '"encrypted": *true'; then
+              echo "::error file=$f::matches a .sops.yaml creation rule but is not SOPS-encrypted"
               status=1
             fi
-          done < <(git ls-files | grep -E '\.(enc|secret)\.[A-Za-z0-9]+$' || true)
+          done < <(bash scripts/sops-files.sh)
+          echo "checked $count file(s)"
           exit $status
 
   shellcheck:

@@ -14,8 +14,11 @@
 #               "age1". CI does not decrypt anything; Argo CD decrypts in-cluster
 #               with its own key (added as a second recipient in Milestone 3).
 #
-# Rotation: add the new recipient, run `sops updatekeys` on every encrypted
-# file, remove the old recipient, run `sops updatekeys` again, commit.
+# Adding a recipient:   edit keys below, then `sops updatekeys` on every file.
+# Removing a recipient: edit keys below, then `sops rotate --in-place` on
+#                       every file (new data key), then `sops updatekeys`.
+#                       `updatekeys` alone does NOT revoke a removed key.
+# Full procedure and drill: docs/runbooks/secrets.md
 
 keys:
   - &operator age1PLACEHOLDER_REPLACE_WITH_OUTPUT_OF_scripts_sops-init

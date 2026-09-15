@@ -17,10 +17,27 @@ before they are exposed at all.
 - Two `cloudflared` replicas run in the cluster and register a named Cloudflare
   Tunnel. Public hostnames are CNAMEs to the tunnel. No Service of type
   LoadBalancer is created for HTTP traffic.
-- Tunnel ingress has a single catch-all rule that forwards
-  `*.ivanpanev.net` to the in-cluster Cilium Gateway Service (ClusterIP).
-  Per-hostname routing lives in Kubernetes as `HTTPRoute` objects, not in
-  Cloudflare configuration.
+- Tunnel ingress has one explicit rule per published hostname, all pointing
+  at the in-cluster Cilium Gateway Service (ClusterIP), and a final catch-all
+  that returns `http_status:404`. A hostname that is not in the list is not
+  forwarded, whatever DNS says. Path routing within a hostname lives in
+  Kubernetes as `HTTPRoute` objects.
+- Access is enforced twice for every administrative hostname: at the edge by
+  the Access policy, and again at the origin by cloudflared itself, which
+  validates the `Cf-Access-Jwt-Assertion` JWT against the team's JWKS before
+  forwarding (`originRequest.access: {required: true, teamName, audTag}`).
+  A request that reaches the Gateway for an admin hostname has therefore
+  carried a valid Access token for that application's audience; a DNS record
+  or Terraform drift cannot expose an origin without also removing its
+  Access application, which the invariant below forbids.
+- Terraform invariant: one `hostnames` map in `infra/terraform/cloudflare`
+  generates the DNS record, the tunnel ingress rule, and the Access
+  application and policy for each entry. An entry must either reference an
+  Access policy or be explicitly marked `public = true` (validated at plan
+  time); there is no third state.
+- Applications that can consume the JWT themselves (Grafana `auth.jwt`) also
+  do so, giving them the identity for authorisation without a second login
+  (ADR-0014).
 - TLS terminates at Cloudflare; the tunnel is encrypted; the in-cluster hop
   from cloudflared to the Gateway is plain HTTP inside the cluster network.
   cert-manager is still installed (Cloudflare DNS-01) for internal TLS where
@@ -50,3 +67,11 @@ before they are exposed at all.
   version, the fallback is cloudflared ingress rules pointing directly at
   Services; this is a contained change in one manifest and one Terraform
   resource.
+- Adding a hostname is a one-entry change in Terraform plus an `HTTPRoute`;
+  forgetting either produces a 404, never an exposure.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F12): replaced the wildcard tunnel rule with explicit
+  per-hostname rules and a 404 catch-all; added origin-side JWT validation in
+  cloudflared and the Terraform hostnames invariant.

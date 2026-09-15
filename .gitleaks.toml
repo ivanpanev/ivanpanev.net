@@ -1,14 +1,12 @@
-# gitleaks configuration: extend the default rules and allow-list known-safe patterns.
+# gitleaks configuration: extend the default rules and allow-list known non-secrets.
+# No directory is exempt (M0-R1-F05): evidence packs are scanned like everything else.
 title = "ivanpanev.net"
 
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Known non-secrets"
-paths = [
-  '''docs/reviews/evidence/.*''',
-]
 regexes = [
   # SOPS-encrypted values are ciphertext, not secrets
   '''ENC\[AES256_GCM,data:.*\]''',

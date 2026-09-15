@@ -61,29 +61,78 @@ On Windows PowerShell use a temporary file in `$env:TEMP` and delete it
 afterwards, or pass values through `TF_VAR_*` environment variables read from
 `sops --decrypt --output-type json`.
 
-## Rotate or add a recipient
+## How SOPS encryption is layered (read before rotating anything)
 
-1. Add the new public key to `.sops.yaml` under `keys` and to every
-   `key_groups` entry that should include it.
-2. Re-encrypt every managed file with the new recipient set:
+Each file has one random symmetric **data key** that encrypts the values.
+The data key is then wrapped once per recipient (age public key). Two
+commands touch this and they are not interchangeable:
+
+| Command | Effect |
+| --- | --- |
+| `sops updatekeys FILE` | Re-wraps the *existing* data key for the current recipient set in `.sops.yaml`. Fast; does not change the data key. |
+| `sops rotate --in-place FILE` | Generates a *new* data key, re-encrypts every value with it, wraps it for the current recipients. |
+
+Consequence: removing a recipient with `updatekeys` alone does **not** revoke
+them. Anyone who held the removed key and once decrypted the file (or
+extracted its data key) can still decrypt every future revision, because the
+data key is unchanged. Only `rotate` closes that.
+
+## Add a recipient (new cluster, new operator machine)
+
+1. Add the public key to `.sops.yaml` under `keys` and to every `key_groups`
+   entry that should include it.
+2. Re-wrap every managed file:
    ```
-   git ls-files | grep -E '\.(enc|secret)\.' | xargs -n1 sops updatekeys --yes
+   scripts/sops-files.sh | xargs -n1 sops updatekeys --yes
    ```
-3. To remove a recipient, delete it from `.sops.yaml` and repeat step 2.
-   Values encrypted before removal remain readable to the removed key in Git
-   history; rotate the underlying secrets themselves if the key was
-   compromised.
-4. Commit `.sops.yaml` and the re-encrypted files together.
+3. Commit `.sops.yaml` and the files together.
+
+## Remove a recipient, or respond to a suspected key compromise
+
+1. Delete the recipient from `.sops.yaml` (all `key_groups` entries).
+2. Rotate the data key of every managed file, then re-wrap:
+   ```
+   scripts/sops-files.sh | xargs -n1 sops rotate --in-place
+   scripts/sops-files.sh | xargs -n1 sops updatekeys --yes
+   ```
+3. Verify the removed key can no longer decrypt (see the drill below).
+4. Commit.
+5. Every revision **before** this commit remains decryptable by the removed
+   key in Git history forever. If the key was compromised (not merely
+   retired), the underlying credentials in those files (Hetzner token,
+   Cloudflare token, S3 keys, Grafana password, tunnel token...) must be
+   regenerated at their source and the new values committed. Rotation of the
+   SOPS layer protects future values only.
+
+### Revocation drill (run once when setting this up, and after any real rotation)
+
+```
+# two throwaway keys standing in for "operator" and "compromised"
+age-keygen -o /tmp/k1.txt; age-keygen -o /tmp/k2.txt
+P1=$(grep -o 'age1[0-9a-z]*' /tmp/k1.txt); P2=$(grep -o 'age1[0-9a-z]*' /tmp/k2.txt)
+printf 'apiVersion: v1\nkind: Secret\nmetadata: {name: t}\nstringData: {x: hello}\n' > /tmp/t.secret.yaml
+sops --encrypt --age "$P1,$P2" --encrypted-regex '^(data|stringData)$' -i /tmp/t.secret.yaml
+SOPS_AGE_KEY_FILE=/tmp/k2.txt sops -d /tmp/t.secret.yaml >/dev/null && echo "k2 can read (expected)"
+# "remove" k2: rotate data key to k1 only
+SOPS_AGE_KEY_FILE=/tmp/k1.txt sops rotate -i --rm-age "$P2" /tmp/t.secret.yaml
+SOPS_AGE_KEY_FILE=/tmp/k2.txt sops -d /tmp/t.secret.yaml >/dev/null 2>&1 && echo "FAIL: k2 still reads" || echo "k2 revoked (expected)"
+rm /tmp/k1.txt /tmp/k2.txt /tmp/t.secret.yaml
+```
 
 ## Verify nothing leaked
 
-Run before every push (CI enforces the same check from Milestone 3):
+Run before every push. CI (`.github/workflows/hygiene.yml`) runs the same
+check: it derives the list of files from the `path_regex` rules in
+`.sops.yaml` and asks SOPS itself whether each is encrypted.
 
 ```
-git ls-files | grep -E '\.(enc|secret)\.' | while read -r f; do
-  grep -q '"sops":\|^sops:' "$f" || { echo "NOT ENCRYPTED: $f"; exit 1; }
+scripts/sops-files.sh | while read -r f; do
+  sops filestatus "$f" | grep -q '"encrypted": *true' || { echo "NOT ENCRYPTED: $f"; exit 1; }
 done
 ```
+
+`scripts/sops-files.sh` lists tracked files matching any creation rule; it is
+the single definition used by the runbook and CI so the two cannot disagree.
 
 ## Rollback
 

@@ -26,8 +26,14 @@ apps/notebook-api/*.test
 **/.terraform.lock.hcl.bak
 **/terraform.tfstate
 **/terraform.tfstate.backup
+# Plaintext variable files are ignored; SOPS-encrypted (*.enc.tfvars[.json])
+# and example files are tracked (see .sops.yaml, docs/runbooks/secrets.md).
 **/*.tfvars
+**/*.tfvars.json
 !**/*.example.tfvars
+!**/*.example.tfvars.json
+!**/*.enc.tfvars
+!**/*.enc.tfvars.json
 **/crash.log
 **/tfplan
 **/tfplan.*

@@ -26,7 +26,8 @@ Start with [docs/architecture.md](docs/architecture.md) and the
 | `docs/reviews/` | Gauntlet reviews: critic rubric, per-milestone reports, evidence, backlog. |
 | `docs/security/` | Threat models. |
 | `scripts/` | Developer setup and helper scripts (PowerShell and POSIX sh). |
-| `.github/workflows/` | CI: site deploy, service build/sign/publish, manifest validation. |
+| `.github/workflows/` | CI: `hygiene.yml` (secret scan, SOPS check, shellcheck, line endings) now; site deploy, service build/sign/publish, manifest validation added with their components. |
+| `renovate.json` | Dependency updates (npm, Go, Actions SHAs, Terraform, Helm charts, toolchain pins). |
 
 ## Getting started
 

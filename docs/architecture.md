@@ -61,8 +61,10 @@ not deeper wildcards.
   UDP through Tunnel.
 - Hetzner block volumes are ReadWriteOnce and do not leave Hetzner.
 - Kubernetes and Talos APIs are reachable only from the operator's address.
-- One control-plane node in Phase 1: API-server downtime during its
-  maintenance, workloads unaffected.
+- One control-plane node in Phase 1 means one etcd copy. Reboot: API
+  unavailable, workloads keep running. Disk loss: cluster rebuild from Git +
+  Terraform, data restored from object storage (CNPG) or etcd snapshot.
+  Accepted RTO four hours (ADR-0004).
 
 ## Milestone log
 

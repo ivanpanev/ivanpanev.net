@@ -1,0 +1,4 @@
+scripts/check-toolchain.sh: syntax ok
+scripts/setup-wsl.sh: syntax ok
+scripts/sops-files.sh: syntax ok
+scripts/sops-init.sh: syntax ok

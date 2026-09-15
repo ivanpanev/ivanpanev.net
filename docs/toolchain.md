@@ -1,56 +1,65 @@
 # Toolchain
 
-Everything below is pinned to a minimum version; newer is fine unless a
-component README says otherwise. `scripts/setup-windows.ps1` installs the
-Windows set with winget; `scripts/setup-wsl.sh` installs the same set inside
-WSL (Fedora or Debian family). All tools listed have native Windows builds;
-WSL is optional.
+Versions live in one place: [`scripts/versions.env`](../scripts/versions.env).
+It defines the minimum acceptable version of each tool (`MIN_*`, set to the
+oldest upstream-supported release at the last review), the exact versions the
+Linux installer downloads (`PIN_*`), and the cluster targets that
+version-skew-bound tools are checked against (`KUBERNETES_VERSION`,
+`TALOS_VERSION`). Renovate proposes updates to the pins; the cluster targets
+change only during a cluster upgrade.
 
-Known constraint on the current workstation (2026-09-16): WSL2 and therefore
-Docker Desktop cannot start because hardware virtualisation is disabled in
-firmware (`HCS_E_HYPERV_NOT_INSTALLED`). Until that is enabled in BIOS/UEFI,
-container builds and Postgres-backed integration tests run in CI only; the
-site and the Go service still build and unit-test natively.
+| Script | Purpose |
+| --- | --- |
+| `scripts/setup-windows.ps1 [-Group ...] [-Check]` | Install or upgrade with winget. `-Check` only resolves every package identifier and reports. |
+| `scripts/setup-wsl.sh [--check] [group ...]` | Install on Linux/WSL from pinned, checksum-verified release artifacts. No `curl \| sh`. `--check` only resolves URLs. |
+| `scripts/check-toolchain.ps1` / `.sh` | Report installed versions against `versions.env`; exit 1 if anything is missing or out of range. |
+| `scripts/sops-init.ps1` / `.sh` | Generate the operator's age key and print the public key for `.sops.yaml`. |
+| `scripts/sops-files.sh` | List tracked files that match a `.sops.yaml` rule (used by CI and the secrets runbook). |
 
-| Tool | Minimum | Used by | Notes |
-| --- | --- | --- | --- |
-| Git | 2.40 | all | commit signing configured (`git config commit.gpgsign true`) |
-| Node.js | 22.12 | `apps/web` | Astro 6 requires Node 22+ |
-| pnpm | 10 | `apps/web` | via `corepack enable`; version pinned in `apps/web/package.json` `packageManager` |
-| Go | 1.23 | `apps/notebook-api` | pinned in `go.mod` |
-| Docker | 27 | local image builds, integration tests | Docker Desktop on Windows; CI builds the published images |
-| Terraform | 1.10 | `infra/terraform/*` | OpenTofu 1.9+ is compatible (OD-6) |
-| Packer | 1.11 | `infra/terraform/hetzner` | the hcloud-k8s module uses it to upload Talos images |
-| talosctl | matches the cluster's Talos version | cluster ops | check `infra/terraform/hetzner/README.md` for the pinned Talos version |
-| kubectl | within one minor of the cluster | cluster ops | |
-| Helm | 3.16 | rendering charts locally, bootstrap | |
-| kustomize | 5.5 | `k8s/` | standalone binary, matches Argo CD's bundled version closely |
-| kubeconform | 0.6 | `k8s/` validation | |
-| Argo CD CLI | matches the installed Argo CD | cluster ops | |
-| SOPS | 3.9 | secrets | |
-| age | 1.2 | secrets | |
-| GitHub CLI | 2.60 | repo automation | |
-| Wrangler | 4 | `apps/web` deploy | installed as a dev dependency of `apps/web`; no global install needed |
-| cosign | 2.4 | verifying images locally | CI signs; operators verify |
-| hcloud CLI | 1.50 | optional, inspecting Hetzner resources | |
+Groups: `web` (Node, pnpm), `go`, `infra` (Terraform, Packer, hcloud),
+`cluster` (kubectl, Helm, kustomize, talosctl, Argo CD CLI, kubeconform,
+cosign), `secrets` (SOPS, age). Git and the GitHub CLI are always installed.
+
+## Tools and why
+
+| Tool | Used by | Notes |
+| --- | --- | --- |
+| Git | all | signed commits (`git config commit.gpgsign true`) |
+| Node.js | `apps/web` | Astro 6 requires Node 22.12+; the LTS line installed is 24 |
+| pnpm | `apps/web` | version also pinned in `apps/web/package.json` `packageManager` |
+| Go | `apps/notebook-api` | toolchain pinned in `go.mod` |
+| Docker | local image builds, integration tests | see the workstation constraint below |
+| Terraform | `infra/terraform/*` | OpenTofu is compatible (OD-6) |
+| Packer | `infra/terraform/hetzner` | the hcloud-k8s module uses it to build Talos images |
+| hcloud CLI | inspecting Hetzner resources | optional |
+| talosctl | cluster operations | minor version must equal the cluster's Talos minor |
+| kubectl | cluster operations | within one minor of the cluster's Kubernetes version |
+| Helm | rendering charts locally, Argo CD bootstrap | Helm 4 is fine |
+| kustomize | `k8s/` | standalone binary, tracks Argo CD's bundled version |
+| kubeconform | `k8s/` validation | |
+| Argo CD CLI | cluster operations | matches the installed Argo CD major |
+| SOPS, age | secrets | |
+| GitHub CLI | repository automation | |
+| Wrangler | `apps/web` deploy | dev dependency of `apps/web`; no global install |
+| cosign | verifying signed images locally | CI signs; operators verify |
 
 ## Credentials the operator must create (never stored in this repository)
 
 | Credential | Where used | Scope |
 | --- | --- | --- |
 | Hetzner Cloud API token | Terraform (hetzner root) | read/write on the project |
-| Hetzner Object Storage S3 key pair | Terraform state backend, Loki, CNPG backups | per-bucket policies where possible |
+| Hetzner Object Storage S3 key pair | Terraform state backend, Loki, CNPG backups, etcd snapshots | per-bucket policies where possible |
 | Cloudflare API token | Terraform (cloudflare root), wrangler | Zone: DNS Edit, Zone Settings Edit; Account: Workers Scripts Edit, Access: Apps and Policies Edit, Cloudflare Tunnel Edit, Email Routing Edit |
 | Cloudflare Account ID | wrangler, Terraform | |
 | GitHub repository secrets | CI | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; GHCR uses `GITHUB_TOKEN` |
 | age private key | SOPS decryption on the operator machine | `SOPS_AGE_KEY_FILE` |
 | OpenPGP key material | commit signing, article signatures | offline certify key; subkeys on hardware token recommended |
 
-## Verify the installation
+## Workstation constraint (2026-09-16)
 
-```
-scripts/check-toolchain.ps1     # Windows
-scripts/check-toolchain.sh      # WSL / POSIX
-```
-
-Both print each tool, the detected version, and whether it meets the minimum.
+WSL2 and therefore Docker Desktop cannot start on the current workstation
+because hardware virtualisation is disabled in firmware
+(`HCS_E_HYPERV_NOT_INSTALLED`). All tools listed have native Windows builds
+and WSL is optional, but until virtualisation is enabled in BIOS/UEFI,
+container builds and Postgres-backed integration tests run in CI only; the
+site and the Go service still build and unit-test natively.

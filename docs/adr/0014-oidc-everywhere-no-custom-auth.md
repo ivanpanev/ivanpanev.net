@@ -25,6 +25,32 @@ flaw.
 - The notebook intentionally has no accounts; its access model is the
   passcode-derived key (ADR-0009).
 
+How the Phase 1 admin applications consume the Access identity (no double
+login, and the origin verifies the edge's claim rather than trusting the
+network path, see ADR-0005):
+
+| Application | Mechanism |
+| --- | --- |
+| Grafana | `auth.jwt` enabled: header `Cf-Access-Jwt-Assertion`, JWKS from `https://<team>.cloudflareaccess.com/cdn-cgi/access/certs`, `expect_claims` with the Access application AUD, `auto_sign_up` to Viewer, the operator email mapped to Admin. Grafana's own login form is disabled. |
+| Argo CD | Access in front, validated again by cloudflared at the origin (ADR-0005). Argo CD's own login remains as the second factor for write operations through the UI; the local `admin` account is used for bootstrap only and then replaced by a named local account with a strong password stored in SOPS, until SSO to the Phase 2 OIDC provider replaces it. CLI work uses `argocd login --core` via port-forward from the firewalled operator address. |
+| Hubble UI | No authentication of its own; cloudflared's origin-side JWT validation is the only gate, which is why the hostname is in the Access-required set with no `public` escape hatch (ADR-0005). |
+
+## Alternatives considered
+
+- oauth2-proxy or Authelia in front of every admin app now: a self-hosted
+  auth proxy the operator must patch and keep highly available before any
+  workload exists; Cloudflare Access does the same job at the edge with no
+  in-cluster footprint, and the JWT it issues can be verified at the origin.
+- Authentik or Pocket ID from day one: the right end state, but it is a
+  stateful, security-critical service that would ship before the database,
+  backup and observability layers it depends on are proven; deferred to
+  Phase 2 by design.
+- Basic auth or application-local admin accounts only: one factor, no
+  central revocation, no audit trail; rejected.
+- Tailscale/WireGuard-only access to admin UIs: excellent for the operator,
+  but does not extend to friends and family, and would bypass the audit
+  log that Access provides.
+
 ## Consequences
 
 - Admin access depends on Cloudflare Access availability; local fallback is
@@ -32,3 +58,8 @@ flaw.
 - Applications must be chosen or built to accept OIDC or forward-auth
   headers; this constrains future self-hosted software choices in a useful
   way.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F08, M0-R1-F12): added alternatives and the per-application
+  table describing how the Access identity is consumed and verified at origin.

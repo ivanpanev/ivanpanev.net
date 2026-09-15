@@ -26,9 +26,18 @@ tied to a specific cluster's key material.
   (CRDs and operators before their custom resources).
 - Secrets: SOPS with age recipients (`.sops.yaml`). Argo CD decrypts through
   the KSOPS Kustomize plugin (repo-server init container copies the `ksops`
-  binary; `kustomize.buildOptions: --enable-alpha-plugins --enable-exec`).
-  The cluster's age private key is a Kubernetes Secret in the `argocd`
-  namespace created by hand during bootstrap and never committed.
+  binary; `kustomize.buildOptions: --enable-alpha-plugins --enable-exec
+  --enable-helm`; the last flag is required because charts are consumed via
+  Kustomize `helmCharts`). The cluster's age private key is a Kubernetes
+  Secret in the `argocd` namespace created by hand during bootstrap and never
+  committed.
+- Trust boundary: `--enable-exec` means any Kustomize exec plugin committed
+  to the repository runs inside repo-server with access to the age key.
+  Write access to `main` is therefore equivalent to cluster-admin plus
+  secret-read. Mitigations: `main` is protected and requires signed commits
+  and passing CI (ADR-0012); Argo CD is restricted to this one repository;
+  repo-server runs with a read-only root filesystem and no service-account
+  token. Recorded for the Milestone 5 platform threat model.
 - Two recipients per file: the operator key and the cluster key. Adding the
   home cluster means adding a third recipient and running `sops updatekeys`.
 - Argo CD UI is reachable only through the tunnel behind Cloudflare Access
@@ -49,3 +58,8 @@ tied to a specific cluster's key material.
   Config Management Plugin sidecar running `sops -d` directly.
 - Argo CD's own manifests contain the bootstrap chicken-and-egg: documented
   in `docs/runbooks/cluster-bootstrap.md`.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F18): added `--enable-helm` and the exec-plugin trust
+  boundary.

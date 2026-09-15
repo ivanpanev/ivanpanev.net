@@ -9,7 +9,8 @@ operator who has not touched the system in six months.
 | [secrets.md](secrets.md) | Encrypting, decrypting, rotating secrets with SOPS and age | M0 |
 | cluster-bootstrap.md | Create the Hetzner cluster from zero, install Argo CD, hand over to GitOps | M2/M3 |
 | cluster-teardown.md | Destroy the cluster safely (delete protection, backups first) | M2 |
-| cluster-upgrade.md | Talos and Kubernetes upgrades with `talosctl` | M3 |
+| cluster-upgrade.md | Talos and Kubernetes upgrades with `talosctl`; update `scripts/versions.env` cluster targets | M3 |
+| etcd-restore.md | Rebuild the control plane from a daily `talosctl etcd snapshot` in object storage | M3 |
 | pgp-key-ceremony.md | Generate the OpenPGP key hierarchy, publish WKD, configure commit signing | M1 |
 | restore-drill.md | Restore a CloudNativePG cluster from object storage into a scratch namespace | M5 |
 | incident-*.md | One per alert rule, linked from the alert annotation | M5 |

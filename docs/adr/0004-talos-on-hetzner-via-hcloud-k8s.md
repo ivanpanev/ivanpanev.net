@@ -49,9 +49,26 @@ Talos via `hcloud-k8s/kubernetes/hcloud`.
 
 - No SSH: all node operations go through `talosctl`; upgrades are
   `talosctl upgrade` and `talosctl upgrade-k8s`, documented in runbooks.
-- A single control-plane node is a single point of failure for the API
-  server (workloads keep running). Accepted for cost; documented as a known
-  risk with the upgrade path.
+- A single control-plane node means a single etcd member on a single Hetzner
+  root disk. Two distinct failure modes:
+  - Node down or rebooting: the API server is unavailable, running pods keep
+    running, no scheduling or reconciliation until it returns. Minutes.
+  - Node or disk lost: etcd is lost, and with it every Kubernetes object
+    (PV bindings, CNPG `Cluster` resources, Argo CD state, certificates).
+    Recovery is a cluster rebuild from Terraform and Git plus a data restore
+    from object storage, or an etcd restore from snapshot. Hours, not minutes.
+  Accepted for Phase 1 on cost grounds with these mitigations: a daily
+  `talosctl etcd snapshot` uploaded to the `ivp-etcd` bucket (CronJob added in
+  Milestone 3), a written restore procedure (`docs/runbooks/etcd-restore.md`),
+  and the rule that no user data lives only in etcd or on a PV (ADR-0010).
+  Target RTO for a control-plane loss is four hours; RPO for user data is
+  bounded by CNPG WAL archiving (minutes), not by the etcd snapshot. Growing
+  to three control-plane nodes is a `count` change plus roughly EUR 11/month.
 - Packer and `talosctl` are required on the operator machine.
 - Revisit when Hetzner ships managed Kubernetes, or when the home cluster
   becomes primary.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F07): replaced the understated single-control-plane
+  consequence with the etcd single-copy analysis, snapshot mitigation, and RTO.

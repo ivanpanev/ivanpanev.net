@@ -1,0 +1,7 @@
+$ git check-ignore -v infra/terraform/hetzner/{secrets.enc.tfvars,secrets.enc.tfvars.json,prod.tfvars,prod.tfvars.json,x.example.tfvars}
+.gitignore:35:!**/*.enc.tfvars	infra/terraform/hetzner/secrets.enc.tfvars
+.gitignore:36:!**/*.enc.tfvars.json	infra/terraform/hetzner/secrets.enc.tfvars.json
+.gitignore:31:**/*.tfvars	infra/terraform/hetzner/prod.tfvars
+.gitignore:32:**/*.tfvars.json	infra/terraform/hetzner/prod.tfvars.json
+.gitignore:33:!**/*.example.tfvars	infra/terraform/hetzner/x.example.tfvars
+(lines starting with "!" are re-included, i.e. tracked; only prod.tfvars and prod.tfvars.json are ignored)

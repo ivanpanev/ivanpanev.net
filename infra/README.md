@@ -11,8 +11,10 @@ state so a mistake in one cannot destroy the other.
 Conventions:
 
 - Provider and module versions pinned; `.terraform.lock.hcl` committed.
-- Variables carrying credentials come from `*.enc.tfvars` (SOPS) or
-  `TF_VAR_*` environment variables, never from committed plaintext.
+- Variables carrying credentials come from `*.enc.tfvars` / `*.enc.tfvars.json`
+  (SOPS-encrypted, tracked) or `TF_VAR_*` environment variables. Plaintext
+  `*.tfvars` files are gitignored; only `*.example.tfvars` and `*.enc.tfvars*`
+  are tracked (see `.gitignore`).
 - `terraform fmt -check`, `terraform validate`, and `tflint` must pass before
   a plan is reviewed.
 - Every root has a `README.md` with apply/destroy procedure and a link to the

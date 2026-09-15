@@ -1,0 +1,165 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Dependency updates for ivanpanev.net (ADR-0012). Covers npm, Go modules, Dockerfiles, GitHub Actions (SHA-pinned), Terraform providers/modules, Helm charts referenced from Kustomize and Argo CD Applications, and the toolchain pins in scripts/versions.env. PIN_KUBECTL and PIN_TALOSCTL are deliberately unmanaged: they follow KUBERNETES_VERSION/TALOS_VERSION, which change only with a cluster upgrade (docs/runbooks/cluster-upgrade.md).",
+  "extends": [
+    "config:best-practices",
+    ":semanticCommitsDisabled",
+    "helpers:pinGitHubActionDigests",
+    ":pinDevDependencies"
+  ],
+  "timezone": "Europe/Sofia",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "enabledManagers": [
+    "npm",
+    "gomod",
+    "dockerfile",
+    "github-actions",
+    "terraform",
+    "kustomize",
+    "helm-values",
+    "argocd",
+    "custom.regex"
+  ],
+  "argocd": {
+    "managerFilePatterns": ["/^k8s/.+\\.ya?ml$/"]
+  },
+  "helm-values": {
+    "managerFilePatterns": ["/^k8s/.+values.*\\.ya?ml$/"]
+  },
+  "packageRules": [
+    {
+      "description": "Group Astro core and integrations so they move together",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["astro", "@astrojs/**"],
+      "groupName": "astro"
+    },
+    {
+      "description": "Automerge patch updates of dev tooling in the web app after CI passes",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "description": "GitHub Actions: update the SHA and keep the version comment",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    },
+    {
+      "description": "Helm charts and operators are reviewed by hand; never automerge",
+      "matchManagers": ["kustomize", "helm-values", "argocd"],
+      "automerge": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Toolchain pins in scripts/versions.env (PIN_<TOOL>=x.y.z)",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": [
+        "PIN_GO=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "depNameTemplate": "golang/go",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^go(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_TERRAFORM=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "hashicorp/terraform",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_PACKER=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "hashicorp/packer",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_HELM=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "helm/helm",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_KUSTOMIZE=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "kubernetes-sigs/kustomize",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^kustomize/v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_KUBECONFORM=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "yannh/kubeconform",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_ARGOCD=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "argoproj/argo-cd",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_SOPS=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "getsops/sops",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_GH=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "cli/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_COSIGN=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "sigstore/cosign",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_HCLOUD=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "hetznercloud/cli",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_NODE=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^scripts/versions\\.env$/"],
+      "matchStrings": ["PIN_PNPM=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "pnpm",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}

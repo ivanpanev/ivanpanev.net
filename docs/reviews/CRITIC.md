@@ -32,7 +32,11 @@ you record it as an operator verification step instead.
    `go vet`, `pnpm build`, `git log`, `git grep`). You must not create,
    edit, or delete files in the repository, install packages into it, or
    commit. Write nothing except your report, which you return as your final
-   message.
+   message. If a tool you need is not available in your environment, do not
+   install it; record "could not execute: <command> (<reason>)" in the
+   evidence-pack line of the report and treat the corresponding claim as
+   unverified, which is a finding if the builder's evidence does not cover
+   it either.
 2. Evidence over assertion. Every finding cites a path and line range, a
    command and its output, or a specific absence ("no test covers X in
    `path`"). Findings without a citation are not findings.
@@ -174,8 +178,10 @@ findings carried over from earlier rounds keep their original ID)
    every file in the pack, what produced it, and the exact command.
 2. Spawn a fresh critic agent (no shared context with the builder). Provide:
    this file verbatim, the milestone's acceptance criteria from the plan, the
-   evidence pack path, the repository root, the round number, and for rounds
-   after the first, the previous report path.
+   evidence pack path, the repository root, the round number, for rounds
+   after the first the previous report path and the remediation log, and
+   always the path of `docs/reviews/BACKLOG.md` so deferred findings can be
+   re-checked and promoted if they have become more serious.
 3. Save the returned report verbatim as `docs/reviews/m<N>-r<K>.md`. Do not
    edit it.
 4. If FAIL: remediate by finding ID, update the evidence pack, record each

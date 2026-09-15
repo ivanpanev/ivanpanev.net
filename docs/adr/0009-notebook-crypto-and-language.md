@@ -30,14 +30,23 @@ Crypto model (all key material derived and used in the browser):
 2. Output split: `lookupKey` (32 B), `authKey` (32 B), `encKey` (32 B).
 3. `notebookId = base64url(SHA-256(lookupKey))` identifies the notebook to
    the server. `authProof = base64url(SHA-256(authKey))` is sent on mutating
-   requests and stored by the server as the notebook's `auth_hash`.
+   requests. The server never stores `authProof` itself: it stores
+   `auth_hash = SHA-256(authProof)` and compares in constant time. A leaked
+   database, backup, or WAL archive therefore yields nothing replayable
+   against the live API; an attacker would still need `authProof`, which
+   exists only in the client and in transit.
 4. Every item is encrypted with AES-256-GCM under `encKey` with a random
    96-bit nonce; item metadata (title, kind, language) is inside the
    ciphertext envelope. The server stores opaque bytes plus size and expiry.
 5. The same passcode on any device deterministically reproduces all keys.
 
 The server never receives the passcode, `encKey`, or plaintext, and cannot
-distinguish a wrong passcode from an empty notebook. Consequences by design:
+distinguish a wrong passcode from an empty notebook. What the server (and
+Cloudflare, which terminates TLS) does see in transit is `notebookId` and
+`authProof`; a compromise of the *running* server or of the edge therefore
+allows overwriting or deleting ciphertext for notebooks used during the
+compromise window, but never reading it. A compromise of stored data (DB,
+backups) allows neither. Consequences by design:
 two people who pick the same passcode share a notebook. Mitigations: the UI
 requires >= 12 characters or >= 3 dictionary words, offers a generated
 passphrase, and displays a clear warning.
@@ -68,3 +77,8 @@ Storage: Postgres `bytea` for ciphertext in Phase 1 (OD-7 tracks S3 offload).
 - Key derivation is CPU-heavy on the client (about one second on a laptop);
   acceptable and shown with a progress indicator.
 - Lost passcode means lost data; there is no recovery by design.
+
+## Revisions
+
+- 2026-09-16 (M0-R1-F06): server stores `SHA-256(authProof)` rather than
+  `authProof`; added the in-transit versus at-rest compromise distinction.

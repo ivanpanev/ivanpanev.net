@@ -15,8 +15,13 @@ everything that follows, and the reasoning behind them is easy to lose.
 
 Every architecturally significant decision is recorded as an ADR in
 `docs/adr/`, using the template in `0000-template.md`, indexed in
-`docs/adr/README.md`. ADRs are immutable once accepted; a change is a new ADR
-that supersedes the old one.
+`docs/adr/README.md`.
+
+Mutability rule: an ADR may be revised in place until the milestone that
+implements it has passed its gauntlet review; each such revision is listed in
+a `## Revisions` section at the end of the ADR with the date and the review
+finding that prompted it. After that point the ADR is frozen and a change is
+a new ADR that supersedes it.
 
 "Architecturally significant" means: it is expensive to reverse, it affects
 more than one component, or it involves security, data durability, or money.

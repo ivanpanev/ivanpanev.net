@@ -1,0 +1,18 @@
+$ bash sopsfiles-test.sh   (temporary script: scratch clone, stub yq emitting .sops.yaml path_regex values)
+Fake tracked files added:
+  k8s/infrastructure/x/creds.secret.yaml
+  k8s/infrastructure/x/plain.yaml
+  infra/terraform/hetzner/secrets.enc.tfvars
+  infra/terraform/hetzner/secrets.enc.tfvars.json
+  infra/terraform/hetzner/terraform.example.tfvars
+  apps/notebook-api/local.enc.env
+  docs/notes.enc.md
+  README.secret.txt
+--- matched files:
+apps/notebook-api/local.enc.env
+docs/notes.enc.md
+infra/terraform/hetzner/secrets.enc.tfvars
+infra/terraform/hetzner/secrets.enc.tfvars.json
+k8s/infrastructure/x/creds.secret.yaml
+--- expected: creds.secret.yaml, secrets.enc.tfvars, secrets.enc.tfvars.json, local.enc.env, notes.enc.md; NOT plain.yaml, example.tfvars, README.secret.txt
+exit=0

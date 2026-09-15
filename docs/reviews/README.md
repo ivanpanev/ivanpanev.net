@@ -11,7 +11,7 @@
 
 | Milestone | Rounds | Final overall | Status |
 | --- | --- | --- | --- |
-| M0 scaffold and decisions | - | - | in progress |
+| M0 scaffold and decisions | r1: 6 FAIL ([m0-r1.md](m0-r1.md)), r2: pending | - | in progress |
 | M1 site | - | - | pending |
 | M2 Terraform | - | - | pending |
 | M3 platform | - | - | pending |

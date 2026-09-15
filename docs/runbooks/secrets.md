@@ -70,7 +70,7 @@ commands touch this and they are not interchangeable:
 | Command | Effect |
 | --- | --- |
 | `sops updatekeys FILE` | Re-wraps the *existing* data key for the current recipient set in `.sops.yaml`. Fast; does not change the data key. |
-| `sops rotate --in-place FILE` | Generates a *new* data key, re-encrypts every value with it, wraps it for the current recipients. |
+| `sops rotate --in-place FILE` | Generates a *new* data key, re-encrypts every value with it, and wraps it for the recipients **recorded in the file's metadata** (not `.sops.yaml`). Use `--rm-age <pubkey>` / `--add-age <pubkey>` in the same command to change that set atomically. |
 
 Consequence: removing a recipient with `updatekeys` alone does **not** revoke
 them. Anyone who held the removed key and once decrypted the file (or
@@ -90,13 +90,23 @@ data key is unchanged. Only `rotate` closes that.
 ## Remove a recipient, or respond to a suspected key compromise
 
 1. Delete the recipient from `.sops.yaml` (all `key_groups` entries).
-2. Rotate the data key of every managed file, then re-wrap:
+2. In one atomic command per file, generate a new data key **and** drop the
+   removed recipient from the file's own recipient list, so there is no
+   intermediate state in which the fresh key is still wrapped for the
+   removed recipient:
    ```
-   scripts/sops-files.sh | xargs -n1 sops rotate --in-place
+   REMOVED=age1...   # the public key being revoked
+   scripts/sops-files.sh | xargs -n1 sops rotate --in-place --rm-age "$REMOVED"
+   ```
+   Then bring every file's recipient list in line with `.sops.yaml` (this is
+   a consistency step; it adds nothing back):
+   ```
    scripts/sops-files.sh | xargs -n1 sops updatekeys --yes
    ```
+   `xargs -n1` continues after a failure; check its exit status and re-run
+   for any file that errored before moving on.
 3. Verify the removed key can no longer decrypt (see the drill below).
-4. Commit.
+4. Commit, only after steps 2 and 3 have completed for every file.
 5. Every revision **before** this commit remains decryptable by the removed
    key in Git history forever. If the key was compromised (not merely
    retired), the underlying credentials in those files (Hetzner token,

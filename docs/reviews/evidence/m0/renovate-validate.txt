@@ -1,6 +1,0 @@
-$ npx --yes --package renovate@latest renovate-config-validator renovate.json
- WARN: RE2 not usable, falling back to RegExp: regex validation may be inaccurate
-       Error: Cannot find module 're2'
- INFO: Validating renovate.json as global config
- INFO: Config validated successfully against 1 file(s)
-exit=0

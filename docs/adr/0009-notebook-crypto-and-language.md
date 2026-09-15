@@ -46,10 +46,12 @@ Cloudflare, which terminates TLS) does see in transit is `notebookId` and
 `authProof`; a compromise of the *running* server or of the edge therefore
 allows overwriting or deleting ciphertext for notebooks used during the
 compromise window, but never reading it. A compromise of stored data (DB,
-backups) allows neither. Consequences by design:
-two people who pick the same passcode share a notebook. Mitigations: the UI
-requires >= 12 characters or >= 3 dictionary words, offers a generated
-passphrase, and displays a clear warning.
+backups) allows neither.
+
+A consequence of deriving everything from the passcode alone: two people who
+pick the same passcode share a notebook. Mitigations: the UI requires >= 12
+characters or >= 3 dictionary words, offers a generated passphrase, and
+displays a clear warning.
 
 Server-side controls: per-IP token bucket, Cloudflare rate-limiting rule on
 `/v1/*`, item cap 20 MB, notebook cap 100 MB and 50 items, TTL 1 hour to 7
@@ -82,3 +84,5 @@ Storage: Postgres `bytea` for ciphertext in Phase 1 (OD-7 tracks S3 offload).
 
 - 2026-09-16 (M0-R1-F06): server stores `SHA-256(authProof)` rather than
   `authProof`; added the in-transit versus at-rest compromise distinction.
+- 2026-09-16 (M0-R2-F06): repaired the broken paragraph about shared
+  passcodes; no change of substance.

@@ -10,8 +10,8 @@ change only during a cluster upgrade.
 
 | Script | Purpose |
 | --- | --- |
-| `scripts/setup-windows.ps1 [-Group ...] [-Check]` | Install or upgrade with winget. `-Check` only resolves every package identifier and reports. |
-| `scripts/setup-wsl.sh [--check] [group ...]` | Install on Linux/WSL from pinned, checksum-verified release artifacts. No `curl \| sh`. `--check` only resolves URLs. |
+| `scripts/setup-windows.ps1 [-Group ...] [-Check]` | Install or upgrade with winget; kubectl and talosctl are instead downloaded as pinned, checksum-verified binaries into `%LOCALAPPDATA%\ivp\bin` (added to the user PATH) so they follow the cluster version rather than winget's latest. `-Check` resolves every package identifier, HEADs the pinned URLs and confirms each checksum file carries a digest, without installing. |
+| `scripts/setup-wsl.sh [--check] [group ...]` | Install on Linux/WSL from pinned, checksum-verified release artifacts. No `curl \| sh`. `--check` HEADs every artefact URL (rejecting HTML), downloads every checksum file and confirms it carries a digest for the artefact. |
 | `scripts/check-toolchain.ps1` / `.sh` | Report installed versions against `versions.env`; exit 1 if anything is missing or out of range. |
 | `scripts/sops-init.ps1` / `.sh` | Generate the operator's age key and print the public key for `.sops.yaml`. |
 | `scripts/sops-files.sh` | List tracked files that match a `.sops.yaml` rule (used by CI and the secrets runbook). |
@@ -32,13 +32,13 @@ cosign), `secrets` (SOPS, age). Git and the GitHub CLI are always installed.
 | Terraform | `infra/terraform/*` | OpenTofu is compatible (OD-6) |
 | Packer | `infra/terraform/hetzner` | the hcloud-k8s module uses it to build Talos images |
 | hcloud CLI | inspecting Hetzner resources | optional |
-| talosctl | cluster operations | minor version must equal the cluster's Talos minor |
-| kubectl | cluster operations | within one minor of the cluster's Kubernetes version |
+| talosctl | cluster operations | minor version must equal the cluster's Talos minor; installed as a pinned binary on both OSes |
+| kubectl | cluster operations | within one minor of the cluster's Kubernetes version; installed as a pinned binary on both OSes. Docker Desktop ships its own older kubectl earlier on the Windows PATH; the setup script warns when it shadows the pinned one |
 | Helm | rendering charts locally, Argo CD bootstrap | Helm 4 is fine |
 | kustomize | `k8s/` | standalone binary, tracks Argo CD's bundled version |
 | kubeconform | `k8s/` validation | |
 | Argo CD CLI | cluster operations | matches the installed Argo CD major |
-| SOPS, age | secrets | |
+| SOPS, age | secrets | age comes from winget/distro packages because upstream publishes no checksum files; Ubuntu 24.04 ships 1.1.x, hence `MIN_AGE=1.1` |
 | GitHub CLI | repository automation | |
 | Wrangler | `apps/web` deploy | dev dependency of `apps/web`; no global install |
 | cosign | verifying signed images locally | CI signs; operators verify |

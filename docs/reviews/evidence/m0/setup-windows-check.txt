@@ -6,14 +6,16 @@
   ok   Hashicorp.Terraform  (HashiCorp Terraform Hashicorp.Terraform 1.16.2  winget)
   ok   Hashicorp.Packer  (HashiCorp Packer Hashicorp.Packer 1.16.0  winget)
   ok   HetznerCloud.CLI  (hcloud HetznerCloud.CLI 1.67.0  winget)
-  ok   Kubernetes.kubectl  (Kubernetes CLI Kubernetes.kubectl 1.37.0  winget)
+  ok   https://dl.k8s.io/release/v1.35.8/bin/windows/amd64/kubectl.exe
+  ok   digest for kubectl.exe present in https://dl.k8s.io/release/v1.35.8/bin/windows/amd64/kubectl.exe.sha256
+  ok   https://github.com/siderolabs/talos/releases/download/v1.14.0/talosctl-windows-amd64.exe
+  ok   digest for talosctl-windows-amd64.exe present in https://github.com/siderolabs/talos/releases/download/v1.14.0/sha256sum.txt
   ok   Helm.Helm  (Helm Helm.Helm 4.3.0   winget)
   ok   Kubernetes.kustomize  (kustomize Kubernetes.kustomize 5.8.1   winget)
-  ok   Sidero.talosctl  (talosctl Sidero.talosctl 1.14.0  winget)
   ok   argoproj.argocd  (ArgoCD argoproj.argocd 3.5.3   winget)
   ok   YannHamon.kubeconform  (kubeconform YannHamon.kubeconform 0.8.0   winget)
   ok   Sigstore.Cosign  (cosign Sigstore.Cosign 3.1.3   winget)
   ok   SecretsOPerationS.SOPS  (Secrets OPerationS SecretsOPerationS.SOPS 3.13.3  winget)
   ok   FiloSottile.age  (age  FiloSottile.age 1.3.1   winget)
-All package ids resolve.
+All package ids resolve; all pinned URLs and checksum files are valid.
 exit=0

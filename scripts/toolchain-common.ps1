@@ -36,14 +36,19 @@ $script:ToolProbes = @{
 }
 
 function Get-ToolVersion {
-  <# Return the installed version string of a tool, or $null if missing/unknown. #>
-  param([Parameter(Mandatory)] [string]$Name)
-  $cmd = Get-Command $Name -ErrorAction SilentlyContinue
+  <#
+    Return the installed version string of a tool, or $null if missing/unknown.
+    -Name selects the probe (how to ask for the version); -Path optionally points at a
+    specific executable instead of whatever $Name resolves to on PATH.
+  #>
+  param([Parameter(Mandatory)] [string]$Name, [string]$Path)
+  $exe = if ($Path) { $Path } else { $Name }
+  $cmd = Get-Command $exe -ErrorAction SilentlyContinue
   if (-not $cmd) { return $null }
   $probe = $script:ToolProbes[$Name]
   if (-not $probe) { return $null }
   try {
-    $out = (& $Name @($probe.Args) 2>&1 | Out-String)
+    $out = (& $exe @($probe.Args) 2>&1 | Out-String)
   } catch { return $null }
   $m = [regex]::Match($out, $probe.Regex)
   if ($m.Success) { return $m.Groups[1].Value }

@@ -1,25 +1,19 @@
+=== --check with the Go checksum URL pointed back at go.dev (HTML page)
 NOTE: add /c/Users/doubl/.local/bin to PATH (e.g. in ~/.bashrc)
-[install] Node.js 24.21.0
-  ok   https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.xz
-  ok   https://nodejs.org/dist/v24.21.0/SHASUMS256.txt
-  ok   digest for node-v24.21.0-linux-x64.tar.xz present
-  ok   https://registry.npmjs.org/pnpm/12.4.2
 [install] Go 1.27.1
   ok   https://dl.google.com/go/go1.27.1.linux-amd64.tar.gz
-  ok   https://dl.google.com/go/go1.27.1.linux-amd64.tar.gz.sha256
-  ok   digest for go1.27.1.linux-amd64.tar.gz present
-[install] terraform 1.16.2
-  ok   https://releases.hashicorp.com/terraform/1.16.2/terraform_1.16.2_linux_amd64.zip
-  ok   https://releases.hashicorp.com/terraform/1.16.2/terraform_1.16.2_SHA256SUMS
-  ok   digest for terraform_1.16.2_linux_amd64.zip present
-[install] packer 1.16.0
-  ok   https://releases.hashicorp.com/packer/1.16.0/packer_1.16.0_linux_amd64.zip
-  ok   https://releases.hashicorp.com/packer/1.16.0/packer_1.16.0_SHA256SUMS
-  ok   digest for packer_1.16.0_linux_amd64.zip present
-[install] hcloud 1.67.0
-  ok   https://github.com/hetznercloud/cli/releases/download/v1.67.0/hcloud-linux-amd64.tar.gz
-  ok   https://github.com/hetznercloud/cli/releases/download/v1.67.0/checksums.txt
-  ok   digest for hcloud-linux-amd64.tar.gz present
+  ok   https://go.dev/dl/go1.27.1.linux-amd64.tar.gz.sha256
+  FAIL no sha256 digest for go1.27.1.linux-amd64.tar.gz in go1.27.1.linux-amd64.tar.gz.sha256
+[install] gh 2.101.0
+  ok   https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.tar.gz
+  ok   https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_checksums.txt
+  ok   digest for gh_2.101.0_linux_amd64.tar.gz present
+
+Some pinned URLs or checksum files are invalid. Fix scripts/versions.env or the URLs.
+exit=1 (1 expected)
+
+=== --check with PIN_COSIGN=9.9.9 (non-existent release)
+NOTE: add /c/Users/doubl/.local/bin to PATH (e.g. in ~/.bashrc)
 [install] kubectl 1.35.8
   ok   https://dl.k8s.io/release/v1.35.8/bin/linux/amd64/kubectl
   ok   https://dl.k8s.io/release/v1.35.8/bin/linux/amd64/kubectl.sha256
@@ -44,19 +38,15 @@ NOTE: add /c/Users/doubl/.local/bin to PATH (e.g. in ~/.bashrc)
   ok   https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
   ok   https://github.com/yannh/kubeconform/releases/download/v0.8.0/CHECKSUMS
   ok   digest for kubeconform-linux-amd64.tar.gz present
-[install] cosign 3.1.3
-  ok   https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-linux-amd64
-  ok   https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign_checksums.txt
-  ok   digest for cosign-linux-amd64 present
-[install] sops 3.13.3
-  ok   https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64
-  ok   https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.checksums.txt
-  ok   digest for sops-v3.13.3.linux.amd64 present
-  ok   distro packages: age
+[install] cosign 9.9.9
+  FAIL https://github.com/sigstore/cosign/releases/download/v9.9.9/cosign-linux-amd64 (not reachable)
+curl: (22) The requested URL returned error: 404
+  FAIL https://github.com/sigstore/cosign/releases/download/v9.9.9/cosign_checksums.txt (checksum file not reachable)
+  FAIL no sha256 digest for cosign-linux-amd64 in cosign_checksums.txt
 [install] gh 2.101.0
   ok   https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.tar.gz
   ok   https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_checksums.txt
   ok   digest for gh_2.101.0_linux_amd64.tar.gz present
 
-All pinned artefacts reachable and every checksum file carries a digest for its artefact.
-exit=0
+Some pinned URLs or checksum files are invalid. Fix scripts/versions.env or the URLs.
+exit=1 (1 expected)

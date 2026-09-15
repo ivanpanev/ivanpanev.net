@@ -41,7 +41,9 @@ tied to a specific cluster's key material.
 - Two recipients per file: the operator key and the cluster key. Adding the
   home cluster means adding a third recipient and running `sops updatekeys`.
 - Argo CD UI is reachable only through the tunnel behind Cloudflare Access
-  (ADR-0005); local admin access uses `argocd login --port-forward`.
+  (ADR-0005); CLI work uses `argocd login --core`, which talks to the
+  Kubernetes API directly through the operator's kubeconfig (already
+  firewalled to the operator address) and needs no Argo CD account.
 
 ## Alternatives considered
 
@@ -63,3 +65,5 @@ tied to a specific cluster's key material.
 
 - 2026-09-16 (M0-R1-F18): added `--enable-helm` and the exec-plugin trust
   boundary.
+- 2026-09-16 (M0-R2-F06): CLI access path fixed to `argocd login --core`
+  (direct Kubernetes API), matching ADR-0014.

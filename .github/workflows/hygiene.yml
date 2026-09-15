@@ -52,18 +52,28 @@ jobs:
           grep " sops-v${PIN_SOPS}.linux.amd64\$" sums | sed 's# .*#  sops#' | sha256sum -c -
           sudo install -m 0755 sops /usr/local/bin/sops
           sops --version
-      - name: Every file matching a .sops.yaml rule is encrypted
+      - name: List files that must be encrypted (fails the job if the helper fails)
+        run: |
+          set -euo pipefail
+          yq --version
+          bash scripts/sops-files.sh > sops-files.list
+          echo "$(wc -l < sops-files.list) file(s) match .sops.yaml rules"
+      - name: Every listed file is encrypted according to sops itself
         run: |
           set -euo pipefail
           status=0
           count=0
           while IFS= read -r f; do
+            [ -z "$f" ] && continue
             count=$((count + 1))
             if ! sops filestatus "$f" | grep -q '"encrypted": *true'; then
               echo "::error file=$f::matches a .sops.yaml creation rule but is not SOPS-encrypted"
               status=1
             fi
-          done < <(bash scripts/sops-files.sh)
+          done < sops-files.list
+          if [ "$count" -eq 0 ]; then
+            echo "::warning::no files match .sops.yaml rules yet; this check is vacuous until the first encrypted file is committed"
+          fi
           echo "checked $count file(s)"
           exit $status
 

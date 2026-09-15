@@ -31,14 +31,14 @@ docs/reviews/evidence/m0/MANIFEST.md
 docs/reviews/evidence/m0/adr-alternatives.txt
 docs/reviews/evidence/m0/bash-syntax.txt
 docs/reviews/evidence/m0/gitignore-check.txt
-docs/reviews/evidence/m0/renovate-validate.txt
 docs/reviews/evidence/m0/setup-windows-check.txt
 docs/reviews/evidence/m0/setup-wsl-check.txt
-docs/reviews/evidence/m0/sops-files-test.txt
+docs/reviews/evidence/m0/setup-wsl-e2e.txt
+docs/reviews/evidence/m0/setup-wsl-negative.txt
 docs/reviews/evidence/m0/toolchain-check-sh.txt
 docs/reviews/evidence/m0/toolchain-check.txt
-docs/reviews/evidence/m0/verify-test.txt
 docs/reviews/m0-r1.md
+docs/reviews/m0-r2.md
 docs/reviews/m0-remediation.md
 docs/runbooks/README.md
 docs/runbooks/secrets.md

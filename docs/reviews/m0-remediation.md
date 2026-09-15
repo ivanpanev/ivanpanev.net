@@ -31,3 +31,23 @@ Also fixed while testing (not a critic finding): in `setup-wsl.sh` `verify()`, a
 non-matching `grep` inside a command substitution aborted the script silently
 under `set -e`; now guarded with `|| true` and the bare-hash fallback made
 explicit. Caught by the negative test cases.
+
+## Round 2 -> Round 3
+
+Report: [m0-r2.md](m0-r2.md).
+
+| Finding | Severity | Change | Verification |
+| --- | --- | --- | --- |
+| M0-R1-F01 | High | Go checksum fetched from `https://dl.google.com/go/<tarball>.sha256` (plain text) instead of `go.dev/dl` (HTML). Go and kubectl now go through the same `verify()` as every other tool. Prerequisite packages are only installed when missing, and `pkg_install` returns instead of exiting so the fallback spelling runs. | `evidence/m0/setup-wsl-check.txt` (digest present for every artefact); `evidence/m0/setup-wsl-e2e.txt`: real install of the `cluster` group into a throwaway `HOME` from Git bash — seven Linux ELF binaries downloaded, checksum-verified and installed, second run skips all. (Full Linux transcript remains an operator step: no WSL/VM on this workstation.) |
+| M0-R2-F01 | Medium | Windows: kubectl and talosctl are no longer winget packages; `Ensure-PinnedBinary` downloads `PIN_KUBECTL`/`PIN_TALOSCTL` from `dl.k8s.io` / the Talos release, verifies SHA-256 against the upstream checksum file, installs into `%LOCALAPPDATA%\ivp\bin`, adds it to the user PATH and warns when another copy (Docker Desktop's kubectl) shadows it. WSL/age: `MIN_AGE` lowered to 1.1 with the reason recorded (Ubuntu 24.04 ships 1.1.1; upstream publishes no checksums). `docs/toolchain.md` updated. | `evidence/m0/setup-windows-check.txt` shows both pinned URLs and digests validated |
+| M0-R2-F02 | Low | `--check` (both scripts) now HEADs artefact URLs and rejects `text/html`, downloads every checksum file and asserts a 64-hex digest for the artefact name. | `evidence/m0/setup-wsl-negative.txt`: with the old go.dev URL `--check` exits 1 with `FAIL no sha256 digest`; with `PIN_COSIGN=9.9.9` it exits 1 with three FAIL lines |
+| M0-R2-F03 | Low | `hygiene.yml`: `sops-files.sh` runs as its own step (its exit code fails the job, `yq --version` printed); the encryption loop reads the resulting file; zero matches emit a `::warning`. | Workflow diff |
+| M0-R2-F04 | Low | Runbook: removal step is one atomic `sops rotate --in-place --rm-age <pubkey>` per file, followed by `updatekeys --yes` as a consistency step; note about `xargs -n1` continuing past failures; table row clarified to "recipients recorded in the file's metadata". | Doc review |
+| M0-R2-F05 | Low | `Ensure-Package` uses `winget install` for both the install and upgrade paths (upgrades in place regardless of how the tool was first installed), records non-zero exits and continues; the script ends with a failure summary and exit 1 instead of aborting mid-way. | Script logic; `-Check` run |
+| M0-R2-F06 | Nit | ADR-0006 and ADR-0014 both state `argocd login --core` (direct Kubernetes API via kubeconfig, no port-forward); ADR-0009 paragraph repaired. Revisions recorded in each ADR. | Doc review |
+| M0-R2-F07 | Nit | `adr-alternatives.txt` regenerated with the exact command in the MANIFEST (`## ` prefix); `toolchain-common.ps1` working copy renormalised to CRLF. | `git ls-files --eol scripts/*.ps1` |
+
+Also fixed while testing: `expected_digest` returned non-zero when no digest
+matched, which `set -e` turned into a silent exit inside `$(...)`; now returns
+0 with empty output. Same class as the round-1 `verify()` bug, caught by the
+negative test.

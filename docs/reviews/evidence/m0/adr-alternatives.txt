@@ -1,3 +1,4 @@
+$ grep -c "## Alternatives considered" docs/adr/00[0-9][0-9]-*.md
 docs/adr/0000-template.md:1
 docs/adr/0001-record-architecture-decisions.md:0
 docs/adr/0002-split-static-edge-from-dynamic-cluster.md:1
@@ -8,9 +9,9 @@ docs/adr/0006-argocd-with-ksops.md:1
 docs/adr/0007-observability-stack.md:1
 docs/adr/0008-postgres-via-cloudnativepg.md:1
 docs/adr/0009-notebook-crypto-and-language.md:1
-docs/adr/0010-state-only-in-postgres-and-s3.md:2
+docs/adr/0010-state-only-in-postgres-and-s3.md:1
 docs/adr/0011-custom-wiki-layout-not-starlight.md:1
 docs/adr/0012-monorepo-ci-and-supply-chain.md:1
-docs/adr/0013-x86-only-until-homelab-known.md:2
+docs/adr/0013-x86-only-until-homelab-known.md:1
 docs/adr/0014-oidc-everywhere-no-custom-auth.md:1
 docs/adr/0015-gauntlet-review-process.md:1

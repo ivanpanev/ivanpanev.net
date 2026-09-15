@@ -14,7 +14,7 @@ kustomize    -            >= 5.6               MISSING
 kubeconform  -            >= 0.7               MISSING
 argocd       -            >= 3.0               MISSING
 sops         -            >= 3.10              MISSING
-age          -            >= 1.2               MISSING
+age          -            >= 1.1               MISSING
 gh           -            >= 2.70              MISSING
 cosign       -            >= 3.0               MISSING
 

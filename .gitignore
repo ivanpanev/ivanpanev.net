@@ -1,0 +1,57 @@
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# --- Node / Astro ---
+node_modules/
+apps/web/dist/
+apps/web/.astro/
+apps/web/.wrangler/
+.pnpm-store/
+*.tsbuildinfo
+.lighthouseci/
+
+# --- Go ---
+apps/notebook-api/bin/
+apps/notebook-api/coverage.out
+apps/notebook-api/*.test
+
+# --- Terraform ---
+**/.terraform/
+**/.terraform.lock.hcl.bak
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfvars
+!**/*.example.tfvars
+**/crash.log
+**/tfplan
+**/tfplan.*
+
+# --- Cluster credentials (never commit) ---
+**/kubeconfig
+**/kubeconfig.*
+**/talosconfig
+**/talosconfig.*
+**/*.kubeconfig
+*.pem
+*.key
+!**/*.pub
+
+# --- SOPS / age private material ---
+**/age.key
+**/keys.txt
+.sops-age-key
+
+# --- Local env ---
+.env
+.env.*
+!.env.example
+
+# --- Review evidence that is large or generated ---
+docs/reviews/evidence/**/*.log
+docs/reviews/evidence/**/node_modules/

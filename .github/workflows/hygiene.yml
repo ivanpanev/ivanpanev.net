@@ -1,0 +1,85 @@
+name: hygiene
+
+# Repository-wide checks that run on every change:
+# - no plaintext secrets (gitleaks over full history on PRs, HEAD on main)
+# - every file matched by a SOPS creation rule is actually encrypted
+# - shell scripts pass shellcheck
+# - no CRLF sneaks into LF-normalised files
+#
+# Third-party actions are pinned to commit SHAs (see ADR-0012).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets-scan:
+    name: gitleaks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: "true"
+
+  sops-encrypted:
+    name: sops files are encrypted
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Every *.enc.* and *.secret.* file carries SOPS metadata
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if ! grep -Eq '^sops:|"sops":|^\[sops\]|ENC\[' "$f"; then
+              echo "::error file=$f::file matches a SOPS creation rule but is not encrypted"
+              status=1
+            fi
+          done < <(git ls-files | grep -E '\.(enc|secret)\.[A-Za-z0-9]+$' || true)
+          exit $status
+
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install shellcheck
+        run: sudo apt-get update -q && sudo apt-get install -y -q shellcheck
+      - name: Lint
+        run: |
+          set -euo pipefail
+          files=$(git ls-files '*.sh')
+          [ -z "$files" ] && { echo "no shell scripts"; exit 0; }
+          # shellcheck disable=SC2086
+          shellcheck --severity=warning $files
+
+  line-endings:
+    name: no CRLF in LF files
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Detect CRLF outside files declared as CRLF in .gitattributes
+        run: |
+          set -euo pipefail
+          bad=0
+          while IFS= read -r f; do
+            case "$f" in *.ps1|*.psm1|*.cmd|*.bat) continue ;; esac
+            if git grep -Il $'\r' -- "$f" >/dev/null 2>&1; then
+              echo "::error file=$f::contains CRLF line endings"
+              bad=1
+            fi
+          done < <(git ls-files)
+          exit $bad

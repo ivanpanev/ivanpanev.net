@@ -1,0 +1,23 @@
+﻿
+Tool        Installed Minimum Status 
+----        --------- ------- ------ 
+git         2.37.2    2.40    TOO OLD
+node        22.22.0   22.12   ok     
+pnpm        -         10.0    MISSING
+go          -         1.23    MISSING
+docker      28.0.4    27.0    ok     
+terraform   -         1.10    MISSING
+packer      -         1.11    MISSING
+talosctl    -         1.9     MISSING
+kubectl     1.32.2    1.32    ok     
+helm        -         3.16    MISSING
+kustomize   -         5.5     MISSING
+kubeconform -         0.6     MISSING
+argocd      -         2.13    MISSING
+sops        -         3.9     MISSING
+age         -         1.2     MISSING
+gh          -         2.60    MISSING
+cosign      -         2.4     MISSING
+
+
+14 tool(s) missing or outdated. See docs/toolchain.md.

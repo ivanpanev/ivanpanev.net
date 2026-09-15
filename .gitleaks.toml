@@ -1,0 +1,19 @@
+# gitleaks configuration: extend the default rules and allow-list known-safe patterns.
+title = "ivanpanev.net"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secrets"
+paths = [
+  '''docs/reviews/evidence/.*''',
+]
+regexes = [
+  # SOPS-encrypted values are ciphertext, not secrets
+  '''ENC\[AES256_GCM,data:.*\]''',
+  # age public keys are public
+  '''age1[0-9a-z]{58}''',
+  # placeholder in .sops.yaml
+  '''age1PLACEHOLDER[A-Za-z0-9_-]*''',
+]

@@ -1,0 +1,23 @@
+# Normalize line endings to LF in the repo; PowerShell scripts keep CRLF on checkout.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.woff binary
+*.woff2 binary
+*.ico binary
+*.swf binary
+*.wasm binary
+
+# Detached signatures and keys are text but must never be re-encoded
+*.asc -text
+*.sig -text

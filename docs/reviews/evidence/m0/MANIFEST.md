@@ -16,9 +16,12 @@ ANSI colour codes were stripped with `sed`.
 | `gitignore-check.txt` | git | `git check-ignore -v ...` on five tfvars paths | only `prod.tfvars` and `prod.tfvars.json` ignored; `.enc.` and `.example.` variants re-included |
 | `adr-alternatives.txt` | grep | `grep -c "## Alternatives considered" docs/adr/00[0-9][0-9]-*.md` (command echoed as the first line) | every ADR except 0001 (a meta-ADR: process, no alternatives) has exactly 1 |
 | `renovate-validate.txt` | renovate-config-validator | `npx --yes --package renovate@latest renovate-config-validator renovate.json` | "Config validated successfully" |
-| `verify-test.txt` | temporary test script (not committed) | downloaded real kubeconform, kubectl and talosctl artifacts and their checksum files; ran the `verify()` function from `setup-wsl.sh` against them and against three deliberately wrong inputs | 3 verified, 3 mismatches/missing detected, `ALL_OK` |
-| `sops-files-test.txt` | temporary test script (not committed) | scratch clone with a stub `yq`; added eight fake tracked files; ran `scripts/sops-files.sh` | 5 expected matches, 3 expected non-matches |
-| `tree.txt` | git | `git ls-files` after `git add -A` (includes this pack) | |
+| `sops-files-test.txt` | temporary test script (not committed, round 2) | scratch clone with a stub `yq`; added eight fake tracked files; ran `scripts/sops-files.sh` | 5 expected matches, 3 expected non-matches. `sops-files.sh` and `.sops.yaml` rules unchanged since |
+| `tree.txt` | git | `git ls-files` run after `tree.txt` itself was staged (generate, add, regenerate) | identical to `git ls-files`, including itself |
+
+Removed in round 3: `verify-test.txt` (round-2 test of the old inline
+`verify()`), superseded by `setup-wsl-negative.txt` and `setup-wsl-e2e.txt`
+which exercise the current function against real artefacts.
 
 ## Not executable on this workstation
 

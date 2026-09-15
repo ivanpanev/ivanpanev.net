@@ -11,7 +11,7 @@
 
 | Milestone | Rounds | Final overall | Status |
 | --- | --- | --- | --- |
-| M0 scaffold and decisions | r1: 6 FAIL ([m0-r1.md](m0-r1.md)), r2: 7 FAIL ([m0-r2.md](m0-r2.md)), r3: pending | - | in progress |
+| M0 scaffold and decisions | r1: 6 FAIL ([m0-r1.md](m0-r1.md)), r2: 7 FAIL ([m0-r2.md](m0-r2.md)), r3: **8 PASS** ([m0-r3.md](m0-r3.md)) | 2026-09-16 | passed |
 | M1 site | - | - | pending |
 | M2 Terraform | - | - | pending |
 | M3 platform | - | - | pending |

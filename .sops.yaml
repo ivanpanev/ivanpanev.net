@@ -15,8 +15,10 @@
 #               with its own key (added as a second recipient in Milestone 3).
 #
 # Adding a recipient:   edit keys below, then `sops updatekeys` on every file.
-# Removing a recipient: edit keys below, then `sops rotate --in-place` on
-#                       every file (new data key), then `sops updatekeys`.
+# Removing a recipient: edit keys below, then on every file
+#                       `sops rotate --in-place --rm-age <removed pubkey>`
+#                       (new data key AND recipient dropped, atomically),
+#                       then `sops updatekeys --yes` for consistency.
 #                       `updatekeys` alone does NOT revoke a removed key.
 # Full procedure and drill: docs/runbooks/secrets.md
 

@@ -54,6 +54,18 @@ $rows = foreach ($t in $tools) {
   [pscustomobject]@{ Tool = $t.Name; Installed = $installed; Required = $req; Status = $(if ($ok) { 'ok' } else { 'OUT OF RANGE' }) }
 }
 
+# Pinned cluster-bound binaries installed by setup-windows.ps1 may be shadowed by another
+# copy earlier on PATH (Docker Desktop ships kubectl on the Machine PATH). Report both.
+$pinnedBin = Join-Path $env:LOCALAPPDATA 'ivp\bin'
+$rows += foreach ($name in 'kubectl', 'talosctl') {
+  $exe = Join-Path $pinnedBin "$name.exe"
+  if (-not (Test-Path $exe)) { continue }
+  $onPath = (Get-Command $name -ErrorAction SilentlyContinue).Source
+  if ($onPath -eq $exe) { continue }
+  $pv = Get-ToolVersion -Name $name -Path $exe
+  [pscustomobject]@{ Tool = "$name (pinned)"; Installed = $pv; Required = "at $exe"; Status = "SHADOWED by $onPath" }
+}
+
 $rows | Format-Table -AutoSize
 $bad = @($rows | Where-Object { $_.Status -ne 'ok' })
 if ($bad.Count -gt 0) {

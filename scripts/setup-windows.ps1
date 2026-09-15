@@ -140,6 +140,7 @@ function Ensure-PinnedBinary {
   } catch {
     Write-Host "  $($_.Exception.Message); continuing" -ForegroundColor Yellow
     $script:failures.Add("$Command $Version")
+    return   # do not touch PATH for a binary that was not installed
   } finally {
     Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
   }
@@ -152,8 +153,17 @@ function Ensure-PinnedBinary {
   }
   $resolved = Get-Command $Command -ErrorAction SilentlyContinue
   if ($resolved -and $resolved.Source -ne $target) {
-    Write-Host "  WARNING: '$Command' currently resolves to $($resolved.Source), which shadows the pinned binary." -ForegroundColor Yellow
-    Write-Host "           Remove or reorder that PATH entry (Docker Desktop ships its own kubectl), or move $PinnedBin ahead of it." -ForegroundColor Yellow
+    $shadowDir = Split-Path $resolved.Source
+    $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine') -split ';'
+    $scope = if ($machinePath -contains $shadowDir) { 'Machine' } else { 'User' }
+    Write-Host "  WARNING: '$Command' resolves to $($resolved.Source) ($scope PATH), which shadows the pinned binary." -ForegroundColor Yellow
+    if ($scope -eq 'Machine') {
+      # Machine PATH always precedes User PATH; reordering the user entry cannot help.
+      Write-Host "           Remove '$shadowDir' from the Machine PATH (admin: System Properties > Environment Variables)," -ForegroundColor Yellow
+      Write-Host "           or uninstall the tool that ships it (Docker Desktop bundles kubectl). check-toolchain.ps1 reports both copies." -ForegroundColor Yellow
+    } else {
+      Write-Host "           Move '$PinnedBin' ahead of '$shadowDir' in the User PATH, or remove that entry." -ForegroundColor Yellow
+    }
   }
 }
 

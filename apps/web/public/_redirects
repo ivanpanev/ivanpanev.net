@@ -1,2 +1,2 @@
-# www -> apex (both hostnames route to this Worker; keep one canonical origin)
-https://www.ivanpanev.net/* https://ivanpanev.net/:splat 301
+# Workers Static Assets only allow relative destinations (no host-level rules).
+# www.ivanpanev.net → https://ivanpanev.net is a Cloudflare Single Redirect on the zone.

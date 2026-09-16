@@ -34,8 +34,11 @@ for (const required of ['/_headers', '/_redirects', '/404.html', '/sitemap-index
 }
 
 const redirects = await fs.readFile(path.join(dist, '_redirects'), 'utf8');
-if (!/^https:\/\/www\.ivanpanev\.net\/\* https:\/\/ivanpanev\.net\/:splat 301\s*$/m.test(redirects)) {
-  problems.push('_redirects: missing www -> apex 301');
+if (/^\s*https?:\/\//m.test(redirects)) {
+  problems.push('_redirects: Workers Static Assets reject absolute URLs (error 100324); www→apex is a zone Single Redirect');
+}
+if (!/www\.ivanpanev\.net/.test(redirects)) {
+  problems.push('_redirects: must document the www.ivanpanev.net → apex Single Redirect');
 }
 
 const securityTxt = await fs.readFile(path.join(dist, '.well-known', 'security.txt'), 'utf8');

@@ -16,6 +16,8 @@ spec:
       owner: authentik
   plugins:
     - name: barman-cloud.cloudnative-pg.io
+      # Explicit so Argo CD's SSA diff matches the webhook-defaulted live object.
+      enabled: true
       isWALArchiver: true
       parameters:
         barmanObjectName: authentik

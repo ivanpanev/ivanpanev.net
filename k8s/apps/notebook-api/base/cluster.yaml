@@ -16,6 +16,9 @@ spec:
       owner: notebook
   plugins:
     - name: barman-cloud.cloudnative-pg.io
+      # Set explicitly: the CNPG mutating webhook defaults it, and Argo CD's
+      # server-side-apply diff otherwise reports the Cluster OutOfSync forever.
+      enabled: true
       isWALArchiver: true
       parameters:
         barmanObjectName: notebook

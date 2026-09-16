@@ -1,3 +1,6 @@
+# parentRefs.group/kind, backendRefs.group/kind/weight and the catch-all
+# `matches` are API-server defaults. They are spelled out so Argo CD's
+# server-side-apply diff sees Git == live instead of a permanent OutOfSync.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -5,14 +8,23 @@ metadata:
   namespace: gateway
 spec:
   parentRefs:
-    - name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
   hostnames:
     - grafana.ivanpanev.net
   rules:
-    - backendRefs:
-        - name: kube-prometheus-stack-grafana
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: kube-prometheus-stack-grafana
           namespace: monitoring
           port: 80
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -21,14 +33,23 @@ metadata:
   namespace: gateway
 spec:
   parentRefs:
-    - name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
   hostnames:
     - argocd.ivanpanev.net
   rules:
-    - backendRefs:
-        - name: argocd-server
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: argocd-server
           namespace: argocd
           port: 80
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -37,14 +58,23 @@ metadata:
   namespace: gateway
 spec:
   parentRefs:
-    - name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
   hostnames:
     - hubble.ivanpanev.net
   rules:
-    - backendRefs:
-        - name: hubble-ui
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: hubble-ui
           namespace: kube-system
           port: 80
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -53,7 +83,9 @@ metadata:
   namespace: gateway
 spec:
   parentRefs:
-    - name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
   hostnames:
     - notes-api.ivanpanev.net
   rules:
@@ -71,9 +103,12 @@ spec:
             type: Exact
             value: /openapi.yaml
       backendRefs:
-        - name: notebook-api
+        - group: ""
+          kind: Service
+          name: notebook-api
           namespace: notebook
           port: 8080
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -82,11 +117,20 @@ metadata:
   namespace: gateway
 spec:
   parentRefs:
-    - name: public
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
   hostnames:
     - auth.ivanpanev.net
   rules:
-    - backendRefs:
-        - name: authentik-server
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: authentik-server
           namespace: authentik
           port: 80
+          weight: 1

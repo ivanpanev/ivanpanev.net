@@ -46,7 +46,7 @@ func authProof() string {
 
 func TestHealthz(t *testing.T) {
 	_, h := testServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/healthz", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != 200 {
@@ -57,7 +57,7 @@ func TestHealthz(t *testing.T) {
 func TestWrongPasscodeLooksEmpty(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	r := httptest.NewRequest(http.MethodGet, "/v1/notebooks/"+id+"/items", nil)
+	r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/notebooks/"+id+"/items", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != 200 {
@@ -77,7 +77,7 @@ func TestWrongPasscodeLooksEmpty(t *testing.T) {
 func TestPutRequiresAuthAndRejectsWrongProof(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	req := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	req.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, req)
@@ -86,7 +86,7 @@ func TestPutRequiresAuthAndRejectsWrongProof(t *testing.T) {
 	}
 
 	other := sha256.Sum256([]byte("other"))
-	req = httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	req = httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	req.Header.Set("X-Auth", base64.RawURLEncoding.EncodeToString(other[:]))
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, req)
@@ -98,7 +98,7 @@ func TestPutRequiresAuthAndRejectsWrongProof(t *testing.T) {
 func TestPostGetDeleteRoundTrip(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
@@ -109,7 +109,7 @@ func TestPostGetDeleteRoundTrip(t *testing.T) {
 	nonce := base64.RawURLEncoding.EncodeToString(make([]byte, 12))
 	ct := base64.RawURLEncoding.EncodeToString([]byte("ciphertext-bytes!!"))
 	body := `{"kind":"text","nonce":"` + nonce + `","ciphertext":"` + ct + `","ttlSeconds":3600}`
-	post := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
+	post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
 	post.Header.Set("X-Auth", authProof())
 	post.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
@@ -124,14 +124,14 @@ func TestPostGetDeleteRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	get := httptest.NewRequest(http.MethodGet, "/v1/items/"+created.ID, nil)
+	get := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/items/"+created.ID, nil)
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, get)
 	if w.Code != 200 {
 		t.Fatalf("get %d %s", w.Code, w.Body.String())
 	}
 
-	del := httptest.NewRequest(http.MethodDelete, "/v1/items/"+created.ID, nil)
+	del := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/v1/items/"+created.ID, nil)
 	del.Header.Set("X-Auth", authProof())
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, del)
@@ -139,7 +139,7 @@ func TestPostGetDeleteRoundTrip(t *testing.T) {
 		t.Fatalf("delete %d %s", w.Code, w.Body.String())
 	}
 
-	get = httptest.NewRequest(http.MethodGet, "/v1/items/"+created.ID, nil)
+	get = httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/items/"+created.ID, nil)
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, get)
 	if w.Code != http.StatusNotFound {
@@ -149,7 +149,7 @@ func TestPostGetDeleteRoundTrip(t *testing.T) {
 
 func TestCORSAllowlist(t *testing.T) {
 	_, h := testServer(t)
-	r := httptest.NewRequest(http.MethodOptions, "/v1/notebooks/x", nil)
+	r := httptest.NewRequestWithContext(context.Background(), http.MethodOptions, "/v1/notebooks/x", nil)
 	r.Header.Set("Origin", "https://ivanpanev.net")
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -157,7 +157,7 @@ func TestCORSAllowlist(t *testing.T) {
 		t.Fatalf("missing cors origin: %v", w.Header())
 	}
 
-	r = httptest.NewRequest(http.MethodOptions, "/v1/notebooks/x", nil)
+	r = httptest.NewRequestWithContext(context.Background(), http.MethodOptions, "/v1/notebooks/x", nil)
 	r.Header.Set("Origin", "https://evil.example")
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -169,7 +169,7 @@ func TestCORSAllowlist(t *testing.T) {
 func TestItemCap(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
@@ -178,7 +178,7 @@ func TestItemCap(t *testing.T) {
 	ct := base64.RawURLEncoding.EncodeToString([]byte("x"))
 	body := `{"kind":"text","nonce":"` + nonce + `","ciphertext":"` + ct + `","ttlSeconds":3600}`
 	for i := 0; i < 3; i++ {
-		post := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
+		post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
 		post.Header.Set("X-Auth", authProof())
 		w = httptest.NewRecorder()
 		h.ServeHTTP(w, post)
@@ -186,7 +186,7 @@ func TestItemCap(t *testing.T) {
 			t.Fatalf("item %d: %d %s", i, w.Code, w.Body.String())
 		}
 	}
-	post := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
+	post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
 	post.Header.Set("X-Auth", authProof())
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, post)
@@ -197,7 +197,7 @@ func TestItemCap(t *testing.T) {
 
 func TestOpenAPI(t *testing.T) {
 	_, h := testServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/openapi.yaml", nil)
+	r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/openapi.yaml", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != 200 {
@@ -224,7 +224,7 @@ func TestRateLimit(t *testing.T) {
 	h := New(cfg, store.NewMemory(), nil, nil).Handler()
 	id := notebookID()
 	req := func() int {
-		r := httptest.NewRequest(http.MethodGet, "/v1/notebooks/"+id+"/items", nil)
+		r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/notebooks/"+id+"/items", nil)
 		r.Header.Set("CF-Connecting-IP", "203.0.113.9")
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
@@ -246,14 +246,14 @@ func TestItemTooLarge(t *testing.T) {
 	}
 	h := New(cfg, store.NewMemory(), nil, nil).Handler()
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
 	nonce := base64.RawURLEncoding.EncodeToString(make([]byte, 12))
 	ct := base64.RawURLEncoding.EncodeToString(make([]byte, 16))
 	body := `{"kind":"text","nonce":"` + nonce + `","ciphertext":"` + ct + `","ttlSeconds":3600}`
-	post := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
+	post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
 	post.Header.Set("X-Auth", authProof())
 	post.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
@@ -266,14 +266,14 @@ func TestItemTooLarge(t *testing.T) {
 func TestTTLOutOfRange(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
 	nonce := base64.RawURLEncoding.EncodeToString(make([]byte, 12))
 	ct := base64.RawURLEncoding.EncodeToString([]byte("x"))
 	body := `{"kind":"text","nonce":"` + nonce + `","ciphertext":"` + ct + `","ttlSeconds":1}`
-	post := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
+	post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/items", strings.NewReader(body))
 	post.Header.Set("X-Auth", authProof())
 	post.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
@@ -286,7 +286,7 @@ func TestTTLOutOfRange(t *testing.T) {
 func TestStoredAuthIsHashOfProof(t *testing.T) {
 	s, h := testServer(t)
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
@@ -310,11 +310,11 @@ func TestStoredAuthIsHashOfProof(t *testing.T) {
 func TestExtend(t *testing.T) {
 	_, h := testServer(t)
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
-	ext := httptest.NewRequest(http.MethodPost, "/v1/notebooks/"+id+"/extend", strings.NewReader(`{"ttlSeconds":3600}`))
+	ext := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/v1/notebooks/"+id+"/extend", strings.NewReader(`{"ttlSeconds":3600}`))
 	ext.Header.Set("X-Auth", authProof())
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, ext)
@@ -344,7 +344,7 @@ func TestRetryIdempotentStore(t *testing.T) {
 	}
 	h := New(cfg, &flakyStore{Store: store.NewMemory(), remain: 1}, nil, nil).Handler()
 	id := notebookID()
-	put := httptest.NewRequest(http.MethodPut, "/v1/notebooks/"+id, nil)
+	put := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
 	put.Header.Set("X-Auth", authProof())
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, put)
@@ -355,7 +355,7 @@ func TestRetryIdempotentStore(t *testing.T) {
 
 func TestInvalidNotebookID(t *testing.T) {
 	_, h := testServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/v1/notebooks/not-a-hash/items", nil)
+	r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/notebooks/not-a-hash/items", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	if w.Code != http.StatusBadRequest {

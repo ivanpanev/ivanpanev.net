@@ -50,7 +50,7 @@ jobs:
       - name: Scan full history
         run: |
           set -euo pipefail
-          gitleaks git . --redact --exit-code 2 --report-format sarif --report-path results.sarif
+          gitleaks git . --config .gitleaks.toml --redact --exit-code 2 --report-format sarif --report-path results.sarif
           echo "gitleaks: no leaks in $(git rev-list --count HEAD) commit(s)" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload report on findings
         if: failure()

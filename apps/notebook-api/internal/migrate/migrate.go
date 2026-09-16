@@ -15,7 +15,7 @@ func UpURL(ctx context.Context, url string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	return Up(ctx, db)
 }
 

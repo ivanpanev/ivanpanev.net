@@ -31,10 +31,34 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_SUMMARY: "true"
+      # The gitleaks action derives a commit range from github.event.before,
+      # which does not exist on the first push of a branch (M7). Run the
+      # pinned CLI over the whole history instead; that is what this job
+      # promises anyway.
+      - name: Install pinned gitleaks (checksum-verified)
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source scripts/versions.env
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${PIN_GITLEAKS}"
+          curl -fsSL -o gitleaks.tgz "$base/gitleaks_${PIN_GITLEAKS}_linux_x64.tar.gz"
+          curl -fsSL -o sums "$base/gitleaks_${PIN_GITLEAKS}_checksums.txt"
+          grep " gitleaks_${PIN_GITLEAKS}_linux_x64.tar.gz\$" sums | sed 's# .*#  gitleaks.tgz#' | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+      - name: Scan full history
+        run: |
+          set -euo pipefail
+          gitleaks git . --redact --exit-code 2 --report-format sarif --report-path results.sarif
+          echo "gitleaks: no leaks in $(git rev-list --count HEAD) commit(s)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload report on findings
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gitleaks-${{ github.run_id }}
+          path: results.sarif
+          if-no-files-found: ignore
 
   sops-encrypted:
     name: sops files are encrypted

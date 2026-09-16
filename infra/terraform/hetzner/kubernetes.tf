@@ -21,12 +21,12 @@ module "kubernetes" {
   # Tunnel origin is plain HTTP; PROXY protocol would reject cloudflared.
   cilium_gateway_api_proxy_protocol_enabled = false
   # Hubble UI is an Access-protected hostname (ADR-0005 / ADR-0007).
-  cilium_hubble_enabled        = true
-  cilium_hubble_relay_enabled  = true
-  cilium_hubble_ui_enabled     = true
+  cilium_hubble_enabled          = true
+  cilium_hubble_relay_enabled    = true
+  cilium_hubble_ui_enabled       = true
   cilium_service_monitor_enabled = true
-  ingress_nginx_enabled                     = false
-  longhorn_enabled                          = false
+  ingress_nginx_enabled          = false
+  longhorn_enabled               = false
 
   # No Hetzner load balancer for HTTP (ADR-0005). The API stays on the
   # control-plane node, firewalled to the operator. CCM's Service controller

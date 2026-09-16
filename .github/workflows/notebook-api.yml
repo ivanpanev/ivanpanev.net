@@ -15,6 +15,9 @@ on:
     paths:
       - "apps/notebook-api/**"
       - ".github/workflows/notebook-api.yml"
+  # First push of main carried no diff under apps/notebook-api, so the path
+  # filter never fired; a manual run builds the first image (M7).
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -70,7 +73,7 @@ jobs:
 
   image:
     name: build push sign
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 20

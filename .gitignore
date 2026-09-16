@@ -77,3 +77,6 @@ docs/reviews/evidence/**/node_modules/
 *private*.asc
 *.gpg
 
+
+# Operator screenshots dropped at the repo root while reviewing (M7-R1-F09)
+/Screenshot_*.png

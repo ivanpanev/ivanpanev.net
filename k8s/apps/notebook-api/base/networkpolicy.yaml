@@ -11,10 +11,11 @@ spec:
     - Ingress
     - Egress
   ingress:
+    # Gateway traffic arrives with Cilium's reserved `ingress` identity and is
+    # allowed by ciliumnetworkpolicy.yaml, not by a gateway namespaceSelector
+    # (that rule never matched; M7-R1-F09). Only Prometheus scrapes remain
+    # here so a non-Cilium cluster still gets metrics.
     - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: gateway
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring

@@ -167,14 +167,23 @@ the next cluster does not rediscover them):
   release: the surviving operator re-injects its CA into the
   `mcluster.cnpg.io` webhook; until then every Cluster sync fails with
   `tls: failed to verify certificate`.
-- DNS-01 for `wildcard-ivanpanev-net` cannot use an IP-restricted Cloudflare
-  token. The secret in `cert-manager-issuers/cloudflare-api-token.secret.yaml`
-  must be a token scoped to `Zone: DNS Edit` + `Zone: Zone Read` on
-  `ivanpanev.net` with no `request_ip` condition (or one that lists the node
-  public IPs). Symptom: the Challenge stays `pending` with
-  `Error: 9109: Cannot use the access token from location: <node ip>`, then
-  `10502: Too many authentication failures`. Not on the notes path (TLS
-  terminates at Cloudflare); see BACKLOG "M7 operator actions".
+- DNS-01 for `wildcard-ivanpanev-net` needs the dedicated cert-manager token
+  from `docs/toolchain.md` ("Cloudflare API tokens"), never an IP-restricted
+  or shared one. Symptom of the wrong token: the Challenge stays `pending`
+  with `Error: 9109: Cannot use the access token from location: <node ip>`,
+  then `10502: Too many authentication failures`, which also throttles every
+  other consumer of that token. When a Challenge fails on an auth error,
+  delete it (`kubectl -n cert-manager delete challenge --all`) rather than
+  letting it retry. The Certificate is parked out of
+  `cert-manager-issuers/kustomization.yaml` until the token exists
+  (M7-R1-F04); TLS terminates at Cloudflare, so nothing depends on it.
+- `main` is governed by a GitHub ruleset (ADR-0012 revision 2026-09-17):
+  no deletion, no force-push, linear history, and the four `hygiene` jobs
+  must have passed on a commit before it can be pushed to `main`. Work on a
+  branch, open a PR so `hygiene` runs, then fast-forward `main` to the same
+  commit (or merge the PR). Deploy keys are the only bypass actor: the
+  overlay digest bump pushes with the write deploy key in the `overlay-bump`
+  environment.
 
 ## Verify success
 

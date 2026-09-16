@@ -58,6 +58,7 @@ tests/unit, tests/e2e
 
 `.github/workflows/web.yml`: PRs build, verify and upload a preview version;
 `main` deploys the exact `dist/` artefact that passed verification. Secrets
-`CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit; Account Settings: Read) and
-`CLOUDFLARE_ACCOUNT_ID` live in the `preview` and `production` environments.
+`CLOUDFLARE_API_TOKEN` (the deploy token in `docs/toolchain.md`, "Cloudflare
+API tokens") and `CLOUDFLARE_ACCOUNT_ID` live in the `preview` and
+`production` environments.
 First deploy from a workstation: `pnpm exec wrangler login && pnpm deploy`.

@@ -91,8 +91,13 @@ variable "email_local_parts" {
 
 variable "rate_limit_requests" {
   type        = number
-  default     = 10
-  description = "Max requests per period per IP on rate-limited hostnames. Sized for Cloudflare Free (one rule)."
+  default     = 40
+  description = "Max non-OPTIONS requests per period per IP on rate-limited hostnames. 40/10s stays above the notebook-api token bucket (2 rps, burst 20), which remains the binding limit for passcode guessing, while a browser session (open + store + view + delete, each an X-Auth request) fits. M7-R1-F01."
+
+  validation {
+    condition     = var.rate_limit_requests >= 20
+    error_message = "rate_limit_requests below 20 throttles a single browser session on /notes (M7-R1-F01)."
+  }
 }
 
 variable "rate_limit_period" {

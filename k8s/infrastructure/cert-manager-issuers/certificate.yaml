@@ -1,6 +1,6 @@
 # Wildcard for in-cluster TLS later (Gateway stays HTTP; TLS terminates at
-# Cloudflare per ADR-0005). Issuing now proves DNS-01 and keeps the secret
-# ready.
+# Cloudflare per ADR-0005). Not in kustomization.yaml until the DNS-01 token
+# is a dedicated one (M7-R1-F04); see the comment there.
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:

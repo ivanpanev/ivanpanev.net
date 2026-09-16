@@ -8,9 +8,9 @@ name: web
 #   push main    -> verify -> deploy the *same* dist artefact that was verified
 #
 # Third-party actions are pinned to commit SHAs (ADR-0012); Renovate bumps them.
-# Deploy credentials are a scoped Cloudflare API token (Workers Scripts: Edit,
-# Account Settings: Read) stored as repository secrets, exposed only to the
-# deploy jobs through the `production` / `preview` environments.
+# Deploy credentials are the dedicated deploy token from docs/toolchain.md
+# ("Cloudflare API tokens"), stored only in the `production` / `preview`
+# environments so they reach the deploy jobs and nothing else.
 
 on:
   push:

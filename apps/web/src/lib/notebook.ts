@@ -136,10 +136,69 @@ export interface ItemMeta {
   expiresAt: string;
 }
 
+/** Longest we are willing to wait on a Retry-After before giving up (ms). */
+export const MAX_RETRY_AFTER_MS = 10_000;
+
+/** Injectable for tests; the island never waits longer than MAX_RETRY_AFTER_MS. */
+export const timers = {
+  sleep: (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms)),
+};
+
+export class NotebookApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number | undefined,
+    readonly retryAfterSeconds?: number,
+  ) {
+    super(message);
+    this.name = 'NotebookApiError';
+  }
+}
+
+function retryAfterSeconds(r: Response): number {
+  const raw = r.headers.get('Retry-After');
+  const n = raw ? Number.parseInt(raw, 10) : Number.NaN;
+  return Number.isFinite(n) && n > 0 ? n : 5;
+}
+
+/**
+ * One fetch with two defensive behaviours the island relies on:
+ * - a network-level failure (`TypeError: Failed to fetch`, which is also what
+ *   the browser raises when an edge 429 arrives without CORS headers) becomes
+ *   a sentence a person can act on instead of the bare TypeError text;
+ * - a 429 is retried once after `Retry-After` (capped), then surfaced with the
+ *   wait time so the UI can say "try again in N s".
+ */
 async function api(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-  return fetch(`${API_BASE}${path}`, { ...init, headers });
+  const url = `${API_BASE}${path}`;
+  let response: Response;
+  try {
+    response = await fetch(url, { ...init, headers });
+  } catch {
+    throw new NotebookApiError(
+      'Could not reach the notes service. Check your connection, or wait a few seconds if you have been clicking quickly, then try again.',
+      undefined,
+    );
+  }
+  if (response.status !== 429) return response;
+  const wait = retryAfterSeconds(response);
+  if (wait * 1000 > MAX_RETRY_AFTER_MS) {
+    throw new NotebookApiError(`The notes service is throttling this connection. Try again in ${wait} s.`, 429, wait);
+  }
+  await timers.sleep(wait * 1000);
+  let retried: Response;
+  try {
+    retried = await fetch(url, { ...init, headers });
+  } catch {
+    throw new NotebookApiError('Could not reach the notes service after a retry. Wait a few seconds and try again.', undefined);
+  }
+  if (retried.status === 429) {
+    const again = retryAfterSeconds(retried);
+    throw new NotebookApiError(`The notes service is throttling this connection. Try again in ${again} s.`, 429, again);
+  }
+  return retried;
 }
 
 export async function putNotebook(keys: NotebookKeys, ttl = '24h'): Promise<void> {

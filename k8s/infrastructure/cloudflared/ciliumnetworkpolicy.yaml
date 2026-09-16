@@ -1,0 +1,72 @@
+# cloudflared dials the Gateway VIP, but Cilium's Gateway data path is the
+# per-node Envoy, and Envoy enforces the *client's* egress policy against the
+# HTTPRoute's backend pod on its pod port, not against the VIP
+# (cilium/cilium#47617; docs: servicemesh/ingress-and-network-policy). The
+# equivalent namespaceSelector+podSelector rules in a plain NetworkPolicy did
+# not satisfy the Envoy check on this cluster; a CiliumNetworkPolicy
+# toEndpoints rule does (verified with Hubble: the L7 verdict flips from
+# DROPPED 403 "Access denied" to FORWARDED 200).
+#
+# Every HTTPRoute backend in k8s/infrastructure/gateway/httproutes.yaml must
+# be listed here with its container port. Backends also need
+# `fromEntities: [ingress]` on their own side (see
+# k8s/infrastructure/gateway/backend-ingress-entity.yaml).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cloudflared-to-gateway-backends
+  namespace: cloudflared
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: cloudflared
+  egress:
+    - toEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: notebook
+            app.kubernetes.io/name: notebook-api
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring
+            app.kubernetes.io/name: grafana
+            app.kubernetes.io/instance: kube-prometheus-stack
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: argocd
+            app.kubernetes.io/name: argocd-server
+            app.kubernetes.io/instance: argocd
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: hubble-ui
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: authentik
+            app.kubernetes.io/name: authentik
+            app.kubernetes.io/component: server
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP

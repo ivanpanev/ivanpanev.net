@@ -22,3 +22,24 @@ spec:
         - ports:
             - port: "6443"
               protocol: TCP
+---
+# The Gateway's Envoy forwards with the reserved `ingress` identity, so the
+# `namespaceSelector: gateway` rule in networkpolicy.yaml never matches and
+# Envoy answered 403 "Access denied" at L7. See
+# k8s/infrastructure/gateway/backend-ingress-entity.yaml.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: notebook-api-from-gateway
+  namespace: notebook
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: notebook-api
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP

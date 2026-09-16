@@ -29,7 +29,9 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # In-cluster Gateway origin (plain HTTP, ADR-0005)
+    # In-cluster Gateway origin (plain HTTP, ADR-0005). L3/L4 only: the
+    # Envoy-enforced hop to each HTTPRoute backend lives in
+    # ciliumnetworkpolicy.yaml next to this file.
     - to:
         - namespaceSelector:
             matchLabels:

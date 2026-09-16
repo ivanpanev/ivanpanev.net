@@ -8,3 +8,4 @@ resources:
   - referencegrants.yaml
   - networkpolicy.yaml
   - kube-system.yaml
+  - backend-ingress-entity.yaml

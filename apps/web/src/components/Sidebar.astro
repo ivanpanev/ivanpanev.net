@@ -1,0 +1,46 @@
+---
+import { PROJECT_SECTIONS } from '@/site';
+import { getProjects, projectUrl } from '@/lib/content';
+import Search from 'astro-pagefind/components/Search.astro';
+
+interface Props {
+  current?: string;
+}
+const { current } = Astro.props;
+const projects = await getProjects();
+const bySection = PROJECT_SECTIONS.map((s) => ({
+  ...s,
+  items: projects.filter((p) => p.data.section === s.id),
+})).filter((s) => s.items.length > 0);
+---
+
+<aside class="border-b border-line py-6 lg:sticky lg:top-14 lg:max-h-[calc(100dvh-3.5rem)] lg:overflow-y-auto lg:border-b-0 lg:border-r lg:py-10 lg:pr-6" aria-label="Projects">
+  <div class="mb-5">
+    <Search className="pagefind-ui" searchboxOptions={{ placeholder: 'Search projects and posts' }} />
+  </div>
+  <nav>
+    {
+      bySection.map((s) => (
+        <div class="mb-5">
+          <h2 class="mb-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">{s.label}</h2>
+          <ul class="space-y-0.5">
+            {s.items.map((p) => (
+              <li>
+                <a
+                  href={projectUrl(p)}
+                  aria-current={p.id === current ? 'page' : undefined}
+                  class:list={[
+                    'block rounded px-2 py-1 text-sm text-fg-muted hover:bg-surface-2 hover:text-fg',
+                    p.id === current && 'bg-accent-soft font-medium text-fg',
+                  ]}
+                >
+                  {p.data.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </nav>
+</aside>

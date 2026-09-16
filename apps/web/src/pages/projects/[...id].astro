@@ -1,0 +1,17 @@
+---
+import { render } from 'astro:content';
+import WikiLayout from '@/layouts/WikiLayout.astro';
+import { getProjects } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content, headings } = await render(project);
+---
+
+<WikiLayout project={project} headings={headings}>
+  <Content />
+</WikiLayout>

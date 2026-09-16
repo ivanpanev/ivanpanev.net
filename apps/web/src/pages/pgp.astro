@@ -1,0 +1,97 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/site';
+import { getSiteKey } from '@/lib/site-key';
+import { formatFingerprint, wkdHash } from '@/lib/pgp';
+import { formatDate, isoDate } from '@/lib/content';
+
+const key = await getSiteKey();
+const local = SITE.email.split('@')[0]!;
+const hu = await wkdHash(local);
+const fmtExp = (e: Date | 'never' | 'invalid') => (e === 'never' ? 'never' : e === 'invalid' ? 'invalid' : formatDate(e));
+---
+
+<BaseLayout title="PGP" description="OpenPGP public key for encrypted mail and for verifying what I publish.">
+  <article class="prose">
+    <h1>PGP</h1>
+    {
+      key ? (
+        <>
+          <p>
+            Encrypt mail to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> with this key, and use it to check the
+            signatures on <a href="/blog">posts</a>, releases and anything else I sign.
+          </p>
+          <div class="not-prose card p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-fg-subtle">Fingerprint</p>
+            <p class="mt-1 break-all font-mono text-lg" id="fingerprint">
+              {formatFingerprint(key.fingerprint)}
+            </p>
+            <dl class="kv mt-4 text-sm">
+              <dt>Key ID</dt>
+              <dd>{key.keyId}</dd>
+              <dt>Algorithm</dt>
+              <dd class="!font-sans">{key.algorithm}</dd>
+              <dt>Created</dt>
+              <dd>
+                <time datetime={isoDate(key.created)}>{formatDate(key.created)}</time>
+              </dd>
+              <dt>Expires</dt>
+              <dd>{fmtExp(key.expires)}</dd>
+              <dt>User IDs</dt>
+              <dd class="!font-sans">{key.userIds.join('; ')}</dd>
+            </dl>
+            {key.subkeys.length > 0 && (
+              <details class="mt-4 text-sm">
+                <summary class="cursor-pointer text-fg-muted">Subkeys ({key.subkeys.length})</summary>
+                <ul class="mt-2 space-y-1 font-mono text-xs">
+                  {key.subkeys.map((s) => (
+                    <li>
+                      {formatFingerprint(s.fingerprint)} <span class="text-fg-muted">— {s.algorithm}, {s.usage}, expires {fmtExp(s.expires)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            <p class="mt-4 flex flex-wrap gap-2">
+              <a class="btn" href={`/pgp/${local}.asc`} download>Download key (.asc)</a>
+              <a class="btn" href="/verify">Verify a signature</a>
+              <a class="btn" href={`https://keyoxide.org/${key.fingerprint}`} rel="noopener me">Keyoxide profile</a>
+            </p>
+          </div>
+
+          <h2>Fetch it the automatic way</h2>
+          <p>
+            The key is published by <abbr title="Web Key Directory">WKD</abbr>, so any modern client can locate it from
+            the address alone:
+          </p>
+          <pre class="astro-code"><code>gpg --locate-keys {SITE.email}
+gpg --fingerprint {SITE.email}</code></pre>
+          <p>
+            Compare the printed fingerprint with the one above (or with the one I hand you in person). The raw WKD
+            location is <code>/.well-known/openpgpkey/hu/{hu}</code>.
+          </p>
+
+          <h2>Key policy</h2>
+          <ul>
+            <li>The certifying primary key is kept offline. Day-to-day signing and encryption use subkeys on a hardware token.</li>
+            <li>Subkeys are rotated before expiry; the primary fingerprint above stays the same across rotations.</li>
+            <li>A revocation, if it ever happens, is published here and on the key servers and announced in a signed post.</li>
+            <li>Posts marked as signed carry a detached signature you can check on the <a href="/verify">verify page</a> or offline.</li>
+          </ul>
+        </>
+      ) : (
+        <>
+          <p>
+            The public key for <a href={`mailto:${SITE.email}`}>{SITE.email}</a> has not been published yet. When it is,
+            this page will show the fingerprint and key details, offer the armoured key for download, and the key will be
+            discoverable by WKD (<code>gpg --locate-keys {SITE.email}</code>).
+          </p>
+          <p>
+            The planned layout: an offline certifying primary key, with separate signing, encryption and authentication
+            subkeys on a hardware token, rotated before expiry.
+          </p>
+        </>
+      )
+    }
+  </article>
+</BaseLayout>

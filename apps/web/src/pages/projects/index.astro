@@ -1,0 +1,46 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import { PROJECT_SECTIONS } from '@/site';
+import { getProjects, projectUrl } from '@/lib/content';
+
+const projects = await getProjects();
+const sections = PROJECT_SECTIONS.map((s) => ({
+  ...s,
+  items: projects.filter((p) => p.data.section === s.id),
+})).filter((s) => s.items.length > 0);
+---
+
+<BaseLayout title="Projects" description="Design notes for what I am building: decisions, alternatives, what broke." wide class="!py-0">
+  <div class="grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)]">
+    <Sidebar />
+    <div class="py-10">
+      <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
+      <p class="mt-2 max-w-prose text-fg-muted">
+        Living documents, written like internal design notes. Each page records the decisions and their alternatives, and is
+        updated rather than replaced.
+      </p>
+      {
+        sections.map((s) => (
+          <section class="mt-10" aria-labelledby={`sec-${s.id}`}>
+            <h2 id={`sec-${s.id}`} class="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+              {s.label}
+            </h2>
+            <ul class="grid gap-3 sm:grid-cols-2">
+              {s.items.map((p) => (
+                <li class="card p-4">
+                  <div class="flex items-start justify-between gap-3">
+                    <a href={projectUrl(p)} class="font-semibold hover:underline">{p.data.title}</a>
+                    <span class="pill capitalize">{p.data.status}</span>
+                  </div>
+                  <p class="mt-1 text-sm text-fg-muted">{p.data.summary}</p>
+                  {p.data.stack.length > 0 && <p class="mt-2 text-xs text-fg-subtle">{p.data.stack.join(' · ')}</p>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

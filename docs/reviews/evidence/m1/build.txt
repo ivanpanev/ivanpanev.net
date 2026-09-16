@@ -1,0 +1,72 @@
+$ pnpm build
+$ astro build
+03:41:02 [WARN] [config] Shiki syntax highlighting uses inline styles that are not compatible with Content Security Policy (CSP). Consider using Prism syntax highlighting instead, or disable CSP if Shiki is required.
+03:41:03 [content] Syncing content
+03:41:03 [content] Synced content
+03:41:03 [types] Generated 729ms
+03:41:03 [build] output: "static"
+03:41:03 [build] mode: "static"
+03:41:03 [build] directory: C:\Users\doubl\Mysite\apps\web\dist\
+03:41:03 [build] Collecting build info...
+03:41:03 [build] Γ£ô Completed in 794ms.
+03:41:03 [build] Building static entrypoints...
+03:41:04 [assets] Copying fonts (5 files)...
+03:41:04 [vite] Γ£ô built in 708ms
+03:41:04 [vite] Γ£ô built in 243ms
+03:41:04 [build] Rearranging server assets...
+
+ generating static routes 
+03:41:04   Γö£ΓöÇ /404.html (+27ms) 
+03:41:04   Γö£ΓöÇ /about.html (+7ms) 
+03:41:04   Γö£ΓöÇ /blog/tags/ipv4.html (+7ms) 
+03:41:04   Γö£ΓöÇ /blog/tags/ipv6.html (+4ms) 
+03:41:04   Γö£ΓöÇ /blog/tags/meta.html (+4ms) 
+03:41:04   Γö£ΓöÇ /blog/tags/networking.html (+4ms) 
+03:41:04   Γö£ΓöÇ /blog/tags/sre.html (+4ms) 
+03:41:04   Γö£ΓöÇ /blog.html (+6ms) 
+03:41:04   Γö£ΓöÇ /blog/hello-world.html (+6ms) 
+03:41:04   Γö£ΓöÇ /blog/subnetting-by-hand.html (+5ms) 
+03:41:04   Γö£ΓöÇ /og/index.png (+355ms) 
+03:41:05   Γö£ΓöÇ /og/blog.png (+273ms) 
+03:41:05   Γö£ΓöÇ /og/projects.png (+266ms) 
+03:41:05   Γö£ΓöÇ /og/tools.png (+267ms) 
+03:41:05   Γö£ΓöÇ /og/pgp.png (+278ms) 
+03:41:06   Γö£ΓöÇ /og/verify.png (+273ms) 
+03:41:06   Γö£ΓöÇ /og/about.png (+267ms) 
+03:41:06   Γö£ΓöÇ /og/404.png (+258ms) 
+03:41:07   Γö£ΓöÇ /og/tools/subnet.png (+268ms) 
+03:41:07   Γö£ΓöÇ /og/tools/counter.png (+274ms) 
+03:41:07   Γö£ΓöÇ /og/tools/secrets.png (+271ms) 
+03:41:07   Γö£ΓöÇ /og/blog/hello-world.png (+275ms) 
+03:41:08   Γö£ΓöÇ /og/blog/subnetting-by-hand.png (+278ms) 
+03:41:08   Γö£ΓöÇ /og/blog/tags/ipv4.png (+267ms) 
+03:41:08   Γö£ΓöÇ /og/blog/tags/ipv6.png (+277ms) 
+03:41:08   Γö£ΓöÇ /og/blog/tags/meta.png (+263ms) 
+03:41:09   Γö£ΓöÇ /og/blog/tags/networking.png (+262ms) 
+03:41:09   Γö£ΓöÇ /og/blog/tags/sre.png (+263ms) 
+03:41:09   Γö£ΓöÇ /og/projects/home-network.png (+279ms) 
+03:41:10   Γö£ΓöÇ /og/projects/site-platform.png (+321ms) 
+03:41:10   Γö£ΓöÇ /og/projects/notebook.png (+274ms) 
+03:41:10   Γö£ΓöÇ /pgp.html (+5ms) 
+03:41:10   Γö£ΓöÇ /projects.html (+6ms) 
+03:41:10   Γö£ΓöÇ /projects/home-network.html (+4ms) 
+03:41:10   Γö£ΓöÇ /projects/site-platform.html (+3ms) 
+03:41:10   Γö£ΓöÇ /projects/notebook.html (+3ms) 
+03:41:10   Γö£ΓöÇ /rss.xml (+74ms) 
+03:41:10   Γö£ΓöÇ /tools/counter.html (+12ms) 
+03:41:10   Γö£ΓöÇ /tools/secrets.html (+10ms) 
+03:41:10   Γö£ΓöÇ /tools/subnet.html (+9ms) 
+03:41:10   Γö£ΓöÇ /tools.html (+6ms) 
+03:41:10   Γö£ΓöÇ /verify.html (+7ms) 
+03:41:10   Γö£ΓöÇ /index.html (+6ms) 
+03:41:10 Γ£ô Completed in 6.22s.
+
+03:41:10 [build] Γ£ô Completed in 7.24s.
+03:41:10 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`
+03:41:11 [pagefind] Pagefind indexed 21 pages
+03:41:11 [pagefind] Pagefind wrote index to C:\Users\doubl\Mysite\apps\web\dist\pagefind
+03:41:11 [ivp:signed-posts] published 2 raw post(s), 0 with signatures
+03:41:11 [WARN] [ivp:wkd] no public key at src/pgp/publickey.asc; skipping /pgp/ivan.asc and WKD
+03:41:11 [build] 21 page(s) built in 8.77s
+03:41:11 [build] Complete!
+exit=0

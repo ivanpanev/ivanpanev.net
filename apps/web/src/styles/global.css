@@ -1,0 +1,214 @@
+@import 'tailwindcss';
+@import './skins.css';
+
+/* Tailwind v4: map utilities onto the token layer so `bg-surface`, `text-fg`,
+   `border-line` etc. follow the active theme + skin without variants. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.75);
+  --shadow-card: var(--shadow);
+}
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --radius: 0.5rem;
+    --content-width: 44rem;
+    --wiki-width: 76rem;
+  }
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background: var(--canvas);
+    color: var(--fg);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    min-height: 100dvh;
+    line-height: 1.6;
+    /* Nothing may widen the page; wide content scrolls inside its own box. */
+    overflow-x: clip;
+  }
+  code, kbd, pre, samp {
+    font-family: var(--font-mono);
+    font-feature-settings: 'liga' 0;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  a {
+    text-underline-offset: 0.15em;
+  }
+
+  /* Native cross-document view transitions (no ClientRouter, see ADR-0003).
+     Only when the user has not asked for reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+      navigation: auto;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 160ms;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Shiki dual themes: pick the CSS variable set for the active theme. */
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-light);
+    background-color: var(--shiki-light-bg);
+  }
+  :root[data-theme='dark'] .astro-code,
+  :root[data-theme='dark'] .astro-code span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+}
+
+@layer components {
+  /* Markdown typography. Every element rule is guarded with :not(.not-prose *)
+     so page chrome placed inside an article (title block, footers) can opt out,
+     the same contract as Tailwind Typography. */
+  .prose {
+    max-width: var(--content-width);
+    font-size: 1.0625rem;
+  }
+  .prose > * + * { margin-top: 1.1em; }
+  .prose :is(h1, h2, h3, h4):not(.not-prose *) {
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    scroll-margin-top: 5rem;
+  }
+  .prose h1:not(.not-prose *) { font-size: 2.125rem; }
+  .prose h2:not(.not-prose *) { font-size: 1.5rem; margin-top: 2em; }
+  .prose h3:not(.not-prose *) { font-size: 1.2rem; margin-top: 1.6em; }
+  .prose :is(h2, h3):not(.not-prose *) + * { margin-top: 0.6em; }
+  .prose a:not(.not-prose *) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  }
+  .prose a:not(.not-prose *):hover { text-decoration-color: var(--accent); }
+  .prose strong { font-weight: 650; }
+  .prose :is(ul, ol):not(.not-prose *) { padding-left: 1.4em; }
+  .prose ul:not(.not-prose *) { list-style: disc; }
+  .prose ol:not(.not-prose *) { list-style: decimal; }
+  .prose li:not(.not-prose *) + li { margin-top: 0.3em; }
+  .prose blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1em;
+    color: var(--fg-muted);
+  }
+  .prose hr { border: 0; border-top: 1px solid var(--line); margin: 2.5em 0; }
+  .prose img, .prose video { border-radius: var(--radius); max-width: 100%; height: auto; }
+  .prose table { width: 100%; border-collapse: collapse; font-size: 0.95em; display: block; overflow-x: auto; }
+  .prose th, .prose td { border: 1px solid var(--line); padding: 0.45em 0.7em; text-align: left; }
+  .prose th { background: var(--surface-2); font-weight: 600; }
+  .prose code:not(pre code) {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+    font-size: 0.88em;
+  }
+  .prose pre {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .prose pre code { background: transparent; font-size: inherit; }
+  .prose .heading-anchor {
+    margin-left: 0.35em;
+    opacity: 0;
+    text-decoration: none;
+    color: var(--fg-subtle);
+  }
+  .prose :is(h2, h3, h4):hover .heading-anchor,
+  .prose .heading-anchor:focus-visible { opacity: 1; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.85rem;
+    font-size: 0.9rem; font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms, border-color 120ms;
+  }
+  .btn:hover { background: var(--surface-2); border-color: color-mix(in oklab, var(--fg) 25%, var(--line)); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  .btn-primary:hover { background: color-mix(in oklab, var(--accent) 88%, black); border-color: transparent; }
+  .field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.7rem;
+    color: var(--fg);
+    font-size: 0.95rem;
+  }
+  .field:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  .label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--fg-muted); margin-bottom: 0.3rem; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; align-items: baseline; }
+  .kv dt { color: var(--fg-muted); font-size: 0.85rem; }
+  .kv dd { font-family: var(--font-mono); font-size: 0.92rem; overflow-wrap: anywhere; }
+  .pill {
+    display: inline-block; border-radius: 999px; padding: 0.1rem 0.6rem;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em;
+    background: var(--accent-soft); color: var(--fg);
+  }
+  .skip-link {
+    position: absolute; left: 0.5rem; top: -100%;
+    background: var(--accent); color: var(--accent-fg);
+    padding: 0.5rem 0.8rem; border-radius: var(--radius); z-index: 100;
+  }
+  .skip-link:focus { top: 0.5rem; }
+}

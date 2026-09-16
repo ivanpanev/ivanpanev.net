@@ -1,0 +1,30 @@
+---
+import { formatDate, isoDate, postUrl, type Post } from '@/lib/content';
+import { readingTime } from '@/lib/reading-time';
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const rt = readingTime(post.body);
+---
+
+<article class="group">
+  <p class="text-sm text-fg-muted">
+    <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time> · {rt.minutes} min
+  </p>
+  <h2 class="mt-1 text-xl font-semibold tracking-tight">
+    <a href={postUrl(post)} class="group-hover:underline">{post.data.title}</a>
+  </h2>
+  <p class="mt-1.5 text-fg-muted">{post.data.summary}</p>
+  {
+    post.data.tags.length > 0 && (
+      <ul class="mt-2 flex flex-wrap gap-1.5 text-xs" aria-label="Tags">
+        {post.data.tags.map((t) => (
+          <li>
+            <a class="pill hover:underline" href={`/blog/tags/${t}`}>#{t}</a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</article>

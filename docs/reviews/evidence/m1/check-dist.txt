@@ -1,0 +1,4 @@
+$ pnpm lint:html
+$ node scripts/check-dist.mjs
+check-dist: 21 pages OK, 92 files
+exit=0

@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { TOOLS, type ToolId } from '@/lib/tools';
+
+interface Props {
+  id: ToolId;
+}
+const tool = TOOLS.find((t) => t.id === Astro.props.id)!;
+---
+
+<BaseLayout title={tool.name} description={tool.description}>
+  <p class="text-sm text-fg-muted"><a class="underline" href="/tools">Tools</a></p>
+  <h1 class="mt-1 text-3xl font-bold tracking-tight">{tool.name}</h1>
+  <p class="mt-2 max-w-prose text-fg-muted">{tool.description}</p>
+  <div class="mt-8">
+    <slot />
+  </div>
+  <noscript>
+    <p class="card mt-6 p-4 text-sm">This tool runs in your browser and needs JavaScript enabled.</p>
+  </noscript>
+</BaseLayout>

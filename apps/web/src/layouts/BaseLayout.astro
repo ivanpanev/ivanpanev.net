@@ -1,0 +1,41 @@
+---
+import '@/styles/global.css';
+import Head from '@/components/Head.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import type { ComponentProps } from 'astro/types';
+
+type HeadProps = ComponentProps<typeof Head>;
+interface Props extends HeadProps {
+  /** Wider main column for wiki and tool pages. */
+  wide?: boolean;
+  /** Extra classes on <main>. */
+  class?: string;
+}
+
+const { wide = false, class: className, ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head {...head} />
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-canvas text-fg antialiased">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header />
+    <main
+      id="main"
+      tabindex="-1"
+      class:list={[
+        'mx-auto w-full flex-1 px-4 py-10 sm:px-6',
+        wide ? 'max-w-[var(--wiki-width)]' : 'max-w-[var(--content-width)]',
+        className,
+      ]}
+    >
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,17 @@
+---
+import { render } from 'astro:content';
+import ProseLayout from '@/layouts/ProseLayout.astro';
+import { getPosts } from '@/lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<ProseLayout post={post}>
+  <Content />
+</ProseLayout>

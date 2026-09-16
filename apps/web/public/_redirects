@@ -1,0 +1,2 @@
+# www -> apex (both hostnames route to this Worker; keep one canonical origin)
+https://www.ivanpanev.net/* https://ivanpanev.net/:splat 301

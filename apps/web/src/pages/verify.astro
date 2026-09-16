@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Verifier from '@/components/islands/Verifier';
+import { SITE } from '@/site';
+import { getSiteKey } from '@/lib/site-key';
+
+const key = await getSiteKey();
+const local = SITE.email.split('@')[0]!;
+---
+
+<BaseLayout title="Verify a signature" description="Check an OpenPGP signature against the site key, entirely in your browser.">
+  <h1 class="text-3xl font-bold tracking-tight">Verify a signature</h1>
+  <p class="mt-2 max-w-prose text-fg-muted">
+    Checks a detached signature or a clear-signed message against the <a class="underline" href="/pgp">site key</a>.
+    Verification runs in your browser with <a class="underline" href="https://openpgpjs.org" rel="noopener">OpenPGP.js</a>;
+    the content you paste is not uploaded. For anything that matters, verify with <code>gpg</code> on your own machine as well.
+  </p>
+  <div class="mt-8">
+    <Verifier client:load siteKeyUrl={key ? `/pgp/${local}.asc` : undefined} siteKeyFingerprint={key?.fingerprint} />
+  </div>
+</BaseLayout>

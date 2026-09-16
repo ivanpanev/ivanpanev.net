@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import { getPosts, tagCounts } from '@/lib/content';
+
+const posts = await getPosts();
+const tags = tagCounts(posts);
+---
+
+<BaseLayout title="Blog" description="Essays on reliability, networking, security and building things carefully.">
+  <h1 class="text-3xl font-bold tracking-tight">Blog</h1>
+  <p class="mt-2 text-fg-muted">
+    {posts.length} {posts.length === 1 ? 'post' : 'posts'}. Subscribe via <a class="underline" href="/rss.xml">RSS</a>.
+  </p>
+  {
+    tags.size > 0 && (
+      <ul class="mt-4 flex flex-wrap gap-1.5 text-xs" aria-label="All tags">
+        {[...tags].map(([t, n]) => (
+          <li>
+            <a class="pill hover:underline" href={`/blog/tags/${t}`}>
+              #{t} <span class="text-fg-subtle">{n}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  <div class="mt-10 space-y-10">{posts.map((p) => <PostCard post={p} />)}</div>
+</BaseLayout>

@@ -1,6 +1,7 @@
-# ADR-0003: Astro 6 with React islands for the site; no SSR adapter
+# ADR-0003: Astro with React islands for the site; no SSR adapter
 
-- Status: Accepted
+- Status: Accepted (revised in M1, 2026-09-16: Astro 7, TypeScript 6 pin,
+  native View Transitions instead of `ClientRouter`, CSP details)
 - Date: 2026-09-16
 - Deciders: Ivan Panev
 
@@ -13,23 +14,52 @@ multiple themes and skins, ship a Content Security Policy, and later host
 elaborate page-transition animations. Future interactive components (tldraw,
 Monaco) have React-first ecosystems.
 
-Astro 6.0 (March 2026) runs the production runtime in dev, has first-class
-Cloudflare support, a built-in CSP API and Fonts API, stable content
-collections, and requires Node 22+.
+When the plan was written Astro 6 was current. By the time M1 started the
+current release was Astro 7.3, and TypeScript 7 (the Go-based compiler) had
+shipped. `@astrojs/check` (which drives `astro check`) does not yet accept
+TypeScript 7, so the type-checker version is pinned independently of the
+language features used.
 
 ## Decision
 
-- `apps/web` is an Astro 6 project in TypeScript, output `static`, no adapter.
+- `apps/web` is an Astro 7 project in TypeScript, output `static`, no
+  adapter. `build.format: 'file'` plus Workers `html_handling:
+  drop-trailing-slash` gives extension-less, slash-less URLs; `src/lib/urls.ts`
+  is the single place that turns a build pathname into the canonical URL.
+- TypeScript is pinned to `~6.0` until `@astrojs/check` supports 7.x
+  (tracked in `docs/reviews/BACKLOG.md`). Renovate will propose the bump; it
+  must not be merged before `pnpm check` passes with it.
 - Interactive components are React 19 islands with explicit `client:*`
   directives; the default for any component is zero client JavaScript.
+  Islands never touch `window`, `location` or storage during render; browser
+  state is read in `useEffect` so the prerendered HTML and the first client
+  render are identical.
 - Exactly one client UI runtime (React). No Svelte/Vue/Solid islands.
 - Styling: Tailwind v4 utilities on top of a CSS custom-property token layer
-  that implements theme (light/dark) and skin switching.
+  (`src/styles/skins.css`) that implements theme (light/dark) and skin
+  switching via `html[data-theme][data-skin]`. Every token pair is checked for
+  WCAG AA contrast by the e2e axe run in both colour schemes.
 - Content is Markdown/MDX in Git via content collections with Zod schemas.
   No CMS.
-- Astro's `ClientRouter` (View Transitions) is enabled from the start so later
-  transition effects have lifecycle hooks; all motion respects
-  `prefers-reduced-motion`.
+- Page transitions use the platform's cross-document View Transitions
+  (`@view-transition { navigation: auto }` under
+  `prefers-reduced-motion: no-preference`), not Astro's `ClientRouter`.
+  Reason: `ClientRouter` swaps `<head>` client-side and re-executes inline
+  scripts, which does not compose with a hash-based CSP; the native feature
+  needs no JavaScript, works with a strict CSP, and already provides the
+  `::view-transition-*` pseudo-elements Phase 3 animations will target. If a
+  transition ever needs JS lifecycle hooks, `ClientRouter` can be reinstated
+  behind the same CSS.
+- Content Security Policy: Astro's `experimental.csp` emits a
+  `<meta http-equiv>` with SHA-256 hashes for every inline script and style
+  Astro generates, including the pre-paint theme script. Directives the meta
+  form cannot carry (`frame-ancestors`, reporting) live in `public/_headers`.
+  Shiki emits `style=""` attributes, so `style-src-attr 'unsafe-inline'` is
+  allowed; `style-src-elem` stays hash-only. Pagefind needs
+  `'wasm-unsafe-eval'`. No third-party origin appears in any directive; fonts
+  are self-hosted through the Fonts API (`fontsource` provider).
+- Search is Pagefind, indexed at build time over `[data-pagefind-body]`
+  regions, loaded only on pages that render the sidebar.
 
 ## Alternatives considered
 
@@ -38,6 +68,13 @@ collections, and requires Node 22+.
 - SvelteKit: excellent DX and animation ergonomics, but would force a second
   runtime when React-only libraries are embedded.
 - Plain HTML + Eleventy: fine for the blog, weak for the islands.
+- Staying on Astro 6 for the build: would mean starting a fresh project on a
+  release line that is no longer current, with an upgrade due immediately.
+  Astro 7's changes are mechanical (Vite 8, Node 22.12 floor, Fonts API
+  stable) and were absorbed during scaffolding.
+- Adopting TypeScript 7 now: blocked by `@astrojs/check`; using it only for
+  `tsc` while `astro check` uses 6.x would mean two compilers disagreeing.
+- `ClientRouter` for transitions: rejected for M1 for the CSP reasons above.
 
 ## Consequences
 
@@ -45,5 +82,10 @@ collections, and requires Node 22+.
   Assets now, an nginx/Caddy container if ever needed).
 - SSR features are unavailable; any per-request logic goes into an API on a
   subdomain.
+- The CSP hash list changes on every build; there is no long-lived nonce or
+  hash to leak. Anything that injects inline script or style at runtime
+  (browser extensions excluded) will be blocked and show up in the e2e
+  console assertions.
 - Revisit when a feature needs request-time rendering (unlikely for this
-  site) or when Astro's Cloudflare adapter offers something static cannot.
+  site), when `@astrojs/check` supports TypeScript 7, or when a transition
+  effect needs JavaScript lifecycle hooks.

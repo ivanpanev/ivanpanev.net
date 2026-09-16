@@ -1,0 +1,22 @@
+packages:
+  - apps/web
+
+# Supply-chain policy: never resolve a version published less than a day ago.
+# Most npm compromises are pulled within hours; a 24h delay is cheap insurance
+# and pnpm 12 enforces it on every install against the lockfile. Renovate PRs
+# arrive later as a result, which is the intent.
+minimumReleaseAge: 1440
+
+# pnpm >= 12 refuses to install when a dependency wants to run a lifecycle
+# script that is not explicitly allowed (`pnpm approve-builds <pkg>` writes
+# here). Each entry is a deliberate decision; add the reason when adding one.
+allowBuilds:
+  # postinstall validates the platform-specific optional binary matches the JS
+  # package (pulled in by wrangler and vitest); without it esbuild uses slow WASM.
+  esbuild: true
+  # postinstall places the runtime binary used by `wrangler dev`.
+  workerd: true
+
+minimumReleaseAgeExclude:
+  - '@vitest/coverage-v8@5.0.1'
+  - vitest@5.0.1

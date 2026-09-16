@@ -1,0 +1,22 @@
+$ node scripts/lhci-summary.mjs
+/
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":658,"cls":0,"tbtMs":0,"bytes":"322KB","unusedJs":"client.Buyw3Q1S.js 40KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":654,"cls":0,"tbtMs":0,"bytes":"322KB","unusedJs":"client.Buyw3Q1S.js 40KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":654,"cls":0,"tbtMs":0,"bytes":"322KB","unusedJs":"client.Buyw3Q1S.js 40KB/64KB","renderBlocking":"-"}
+/blog/hello-world
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":652,"cls":0,"tbtMs":0,"bytes":"362KB","unusedJs":"client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":649,"cls":0,"tbtMs":0,"bytes":"362KB","unusedJs":"client.Buyw3Q1S.js 40KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":651,"cls":0,"tbtMs":0,"bytes":"362KB","unusedJs":"client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"-"}
+/projects/site-platform
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":653,"cls":0.001,"tbtMs":0,"bytes":"408KB","unusedJs":"client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"Sidebar.C7m5_VGN.css"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":690,"cls":0.001,"tbtMs":0,"bytes":"408KB","unusedJs":"client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"Sidebar.C7m5_VGN.css"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":695,"cls":0,"tbtMs":0,"bytes":"408KB","unusedJs":"client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"Sidebar.C7m5_VGN.css"}
+/tools/subnet
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":693,"cls":0.001,"tbtMs":0,"bytes":"368KB","unusedJs":"client.Buyw3Q1S.js 35KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":694,"cls":0.001,"tbtMs":0,"bytes":"368KB","unusedJs":"client.Buyw3Q1S.js 35KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":693,"cls":0.001,"tbtMs":0,"bytes":"368KB","unusedJs":"client.Buyw3Q1S.js 35KB/64KB","renderBlocking":"-"}
+/verify
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":780,"cls":0,"tbtMs":0,"bytes":"487KB","unusedJs":"Verifier.D0jq1GZS.js 100KB/125KB, client.Buyw3Q1S.js 40KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":779,"cls":0,"tbtMs":0,"bytes":"487KB","unusedJs":"Verifier.D0jq1GZS.js 100KB/125KB, client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"-"}
+   {"perf":100,"a11y":100,"bp":100,"seo":100,"lcpMs":775,"cls":0,"tbtMs":2,"bytes":"487KB","unusedJs":"Verifier.D0jq1GZS.js 100KB/125KB, client.Buyw3Q1S.js 36KB/64KB","renderBlocking":"-"}
+exit=0

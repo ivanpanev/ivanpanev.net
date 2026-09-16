@@ -1,0 +1,72 @@
+# <meta http-equiv=Content-Security-Policy> from dist/index.html (one directive per line)
+default-src 'none';
+img-src 'self' data: blob:;
+font-src 'self';
+connect-src 'self';
+media-src 'self';
+worker-src 'self' blob:;
+manifest-src 'self';
+base-uri 'none';
+form-action 'none';
+object-src 'none';
+upgrade-insecure-requests;
+script-src 'self' 'wasm-unsafe-eval' 'sha256-KNMGPVFBvaHKRDgVJHnoDGRQpqJXuMlE0CryakFmPrY=' 'sha256-BF0290pkb3jxQsE7z00xR8Imp8X34FLC88L0lkMnrGw=' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-0chmwFk0zaA528yFfGV7J9ppIpdfTPPULncDF3WG7Zs=' 'sha256-eIXWvAmxkr251LJZkjniEK5LcPF3NkapbJepohwYRIc=' 'sha256-Q2BPg90ZMplYY+FSdApNErhpWafg2hcRRbndmvxuL/Q=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U=' 'sha256-SHXg3YtOAVshUMT3f+eElYDgbV0kaujWj8DSaXSS4Vs=' 'sha256-3830MywDfyegb7qgluMBl4oCRTk4h9IhA8wK2aqdZps=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
+style-src 'self' ;
+style-src-elem 'self' 'sha256-ndqXs1DkaIoyjwGQpU7Y3jl6HhSopEuyikp611cJ3Wc=' 'sha256-+lQPAxS8FT11kvhkRWqUHqlvretFiQZMsCC4Wz+tX0o=' 'sha256-vv9IoKo7BSLbWcUHr3tNmfNVmm5L/9Cfn2H6LMk7/ow=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
+style-src-attr 'unsafe-inline';
+
+
+# CSP meta presence per sampled page
+index.html: present, 14 hashes
+blog/hello-world.html: present, 14 hashes
+projects/site-platform.html: present, 14 hashes
+tools/subnet.html: present, 14 hashes
+verify.html: present, 14 hashes
+
+# dist/_headers
+# Response headers for Cloudflare Workers Static Assets.
+# The per-page CSP is a <meta> tag emitted by Astro (script/style hashes). The
+# directives a meta tag cannot carry, and everything that is not CSP, live here.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+
+# Hashed build assets are immutable.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+/pagefind/*
+  Cache-Control: public, max-age=86400
+
+# WKD clients fetch cross-origin and must not be redirected or blocked.
+/.well-known/openpgpkey/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: application/octet-stream
+  Cache-Control: public, max-age=3600
+/.well-known/openpgpkey/policy
+  Content-Type: text/plain
+
+# Published key and raw posts are meant to be fetched by tools.
+/pgp/*.asc
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: application/pgp-keys
+/signatures/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: application/pgp-signature
+/raw/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Content-Type: text/markdown; charset=utf-8
+  X-Robots-Tag: noindex
+
+/.well-known/security.txt
+  Content-Type: text/plain; charset=utf-8

@@ -1,0 +1,58 @@
+---
+import type { MarkdownHeading } from 'astro';
+interface Props {
+  headings: MarkdownHeading[];
+}
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 1 && (
+    <nav class="hidden xl:block xl:sticky xl:top-14 xl:max-h-[calc(100dvh-3.5rem)] xl:overflow-y-auto xl:py-10" aria-label="On this page" data-pagefind-ignore>
+      <h2 class="mb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">On this page</h2>
+      <ul class="space-y-1 border-l border-line text-sm" id="toc">
+        {headings.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              data-toc-slug={h.slug}
+              class:list={[
+                '-ml-px block border-l border-transparent py-0.5 pl-3 text-fg-muted hover:text-fg',
+                h.depth === 3 && 'pl-6',
+              ]}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  // Highlight the heading currently in view. Processed by Astro (hashed for CSP).
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('#toc a[data-toc-slug]'));
+  if (links.length) {
+    const byId = new Map(links.map((a) => [a.dataset['tocSlug']!, a]));
+    const targets = [...byId.keys()].map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    let active: HTMLAnchorElement | undefined;
+    const set = (id: string) => {
+      const a = byId.get(id);
+      if (!a || a === active) return;
+      active?.classList.remove('border-accent', 'text-fg', 'font-medium');
+      active?.removeAttribute('aria-current');
+      a.classList.add('border-accent', 'text-fg', 'font-medium');
+      a.setAttribute('aria-current', 'location');
+      active = a;
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) set(visible[0].target.id);
+      },
+      { rootMargin: '-64px 0px -70% 0px', threshold: [0, 1] },
+    );
+    targets.forEach((t) => io.observe(t));
+  }
+</script>

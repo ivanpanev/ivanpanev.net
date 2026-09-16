@@ -1,0 +1,209 @@
+name: web
+
+# apps/web: build, verify, and deploy the static site to Cloudflare Workers
+# Static Assets.
+#
+#   pull_request -> verify (types, unit, build, dist invariants, e2e + axe,
+#                   Lighthouse budgets) -> preview upload (same-repo PRs only)
+#   push main    -> verify -> deploy the *same* dist artefact that was verified
+#
+# Third-party actions are pinned to commit SHAs (ADR-0012); Renovate bumps them.
+# Deploy credentials are a scoped Cloudflare API token (Workers Scripts: Edit,
+# Account Settings: Read) stored as repository secrets, exposed only to the
+# deploy jobs through the `production` / `preview` environments.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web.yml"
+  pull_request:
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Never let the toolchain phone home from CI.
+  ASTRO_TELEMETRY_DISABLED: "1"
+  WRANGLER_SEND_METRICS: "false"
+  DO_NOT_TRACK: "1"
+  CI: "true"
+
+defaults:
+  run:
+    working-directory: apps/web
+
+jobs:
+  verify:
+    name: build and verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      dist-artifact: web-dist-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        # version comes from the root package.json `packageManager` field
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile, release-age policy from pnpm-workspace.yaml)
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Type-check (.astro + .ts)
+        run: pnpm check
+
+      - name: Unit tests with coverage thresholds
+        run: pnpm test -- --coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Static invariants on dist (CSP meta, no external resources, no broken links)
+        run: pnpm lint:html
+
+      - name: Bundle size report
+        run: |
+          echo '### Client bundles (`dist/_astro/*.js`)' >> "$GITHUB_STEP_SUMMARY"
+          echo '| file | bytes | gzip |' >> "$GITHUB_STEP_SUMMARY"
+          echo '|---|---:|---:|' >> "$GITHUB_STEP_SUMMARY"
+          for f in dist/_astro/*.js; do
+            printf '| %s | %s | %s |\n' "$(basename "$f")" "$(stat -c %s "$f")" "$(gzip -c "$f" | wc -c)" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end + accessibility (desktop and mobile, against workerd)
+        run: pnpm test:e2e
+
+      - name: Lighthouse budgets (>= 95 every category, 5 sampled pages)
+        run: |
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          pnpm lhci
+          echo '### Lighthouse' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          pnpm -s lhci:summary >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: web-test-reports-${{ github.run_id }}
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            apps/web/lhci-report
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload verified dist
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: web-dist-${{ github.sha }}
+          path: apps/web/dist
+          retention-days: 7
+          if-no-files-found: error
+
+  preview:
+    name: preview upload
+    # Same-repo PRs only: forks never receive the deploy token.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: preview
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.dist-artifact }}
+          path: apps/web/dist
+      - name: wrangler versions upload
+        id: upload
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          packageManager: pnpm
+          command: versions upload --tag pr-${{ github.event.pull_request.number }} --message "${{ github.event.pull_request.title }}"
+      - name: Preview URL to summary
+        run: |
+          {
+            echo '### Preview'
+            echo '```'
+            echo "${{ steps.upload.outputs.command-output }}" | grep -Ei 'version|preview|https://' || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: deploy to production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://ivanpanev.net
+    concurrency:
+      group: web-deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.dist-artifact }}
+          path: apps/web/dist
+      - name: wrangler deploy (the verified artefact, not a rebuild)
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          packageManager: pnpm
+          command: deploy
+      - name: Post-deploy smoke
+        working-directory: .
+        run: |
+          set -euo pipefail
+          for p in / /.well-known/security.txt /rss.xml /sitemap-index.xml; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "https://ivanpanev.net$p")
+            echo "$p -> $code"
+            [[ "$code" == "200" ]] || exit 1
+          done
+          curl -sSI https://ivanpanev.net/ | grep -i '^strict-transport-security'

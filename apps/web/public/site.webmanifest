@@ -1,0 +1,13 @@
+{
+  "name": "Ivan Panev",
+  "short_name": "ivanpanev",
+  "description": "Essays, project notes, and a small toolbox.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#fafafa",
+  "theme_color": "#1f5fd6",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

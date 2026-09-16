@@ -1,0 +1,22 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { TOOLS } from '@/lib/tools';
+---
+
+<BaseLayout title="Tools" description="Small calculators that run entirely in your browser and work offline.">
+  <h1 class="text-3xl font-bold tracking-tight">Tools</h1>
+  <p class="mt-2 max-w-prose text-fg-muted">
+    Everything here runs in your browser. No input is sent to a server, and the pages keep working without a
+    connection once loaded.
+  </p>
+  <ul class="mt-8 grid gap-3 sm:grid-cols-2">
+    {
+      TOOLS.map((t) => (
+        <li class="card p-4">
+          <a href={t.href} class="font-semibold hover:underline">{t.name}</a>
+          <p class="mt-1 text-sm text-fg-muted">{t.description}</p>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

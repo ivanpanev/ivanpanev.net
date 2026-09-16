@@ -1,0 +1,11 @@
+{
+  "name": "ivanpanev-net",
+  "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "web": "pnpm --filter @ivp/web"
+  }
+}

@@ -11,7 +11,7 @@ operator who has not touched the system in six months.
 | cluster-teardown.md | Destroy the cluster safely (delete protection, backups first) | M2 |
 | cluster-upgrade.md | Talos and Kubernetes upgrades with `talosctl`; update `scripts/versions.env` cluster targets | M3 |
 | etcd-restore.md | Rebuild the control plane from a daily `talosctl etcd snapshot` in object storage | M3 |
-| pgp-key-ceremony.md | Generate the OpenPGP key hierarchy, publish WKD, configure commit signing | M1 |
+| [pgp-key-ceremony.md](pgp-key-ceremony.md) | Generate the OpenPGP key hierarchy, publish WKD, configure commit and post signing | M1 |
 | restore-drill.md | Restore a CloudNativePG cluster from object storage into a scratch namespace | M5 |
 | incident-*.md | One per alert rule, linked from the alert annotation | M5 |
 | migrate-to-home.md | Cut over dynamic services from Hetzner to the home cluster | Phase 2 |

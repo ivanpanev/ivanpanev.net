@@ -1,0 +1,100 @@
+$ pnpm lhci
+$ lhci autorun
+Γ£à  .lighthouseci/ directory writable
+Γ£à  Configuration file found
+Γ£à  Chrome installation found
+Healthcheck passed!
+
+Started a web server with "pnpm exec wrangler dev --port 8790 --ip 127.0.0.1 --log-level warn"...
+WARNING: Timed out waiting for the server to start listening.
+         Ensure the server prints a pattern that matches /listen|ready/i when it is ready.
+Running Lighthouse 3 time(s) on http://127.0.0.1:8790/
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Running Lighthouse 3 time(s) on http://127.0.0.1:8790/blog/hello-world
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Running Lighthouse 3 time(s) on http://127.0.0.1:8790/projects/site-platform
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Running Lighthouse 3 time(s) on http://127.0.0.1:8790/tools/subnet
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Running Lighthouse 3 time(s) on http://127.0.0.1:8790/verify
+Run #1...done.
+Run #2...done.
+Run #3...done.
+Done running Lighthouse!
+
+Checking assertions against 5 URL(s), 15 total run(s)
+System.Management.Automation.RemoteException
+1 result(s) for http://127.0.0.1:8790/ :
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  unused-javascript warning for maxLength assertion
+       Reduce unused JavaScript
+       https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 1
+      all values: 1, 1, 1
+System.Management.Automation.RemoteException
+1 result(s) for http://127.0.0.1:8790/blog/hello-world :
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  unused-javascript warning for maxLength assertion
+       Reduce unused JavaScript
+       https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 1
+      all values: 1, 1, 1
+System.Management.Automation.RemoteException
+2 result(s) for http://127.0.0.1:8790/projects/site-platform :
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  render-blocking-resources warning for maxLength assertion
+       Eliminate render-blocking resources
+       https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 1
+      all values: 1, 1, 1
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  unused-javascript warning for maxLength assertion
+       Reduce unused JavaScript
+       https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 1
+      all values: 1, 1, 1
+System.Management.Automation.RemoteException
+1 result(s) for http://127.0.0.1:8790/tools/subnet :
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  unused-javascript warning for maxLength assertion
+       Reduce unused JavaScript
+       https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 1
+      all values: 1, 1, 1
+System.Management.Automation.RemoteException
+1 result(s) for http://127.0.0.1:8790/verify :
+System.Management.Automation.RemoteException
+  ΓÜá∩╕Å  unused-javascript warning for maxLength assertion
+       Reduce unused JavaScript
+       https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/
+System.Management.Automation.RemoteException
+        expected: <=0
+           found: 2
+      all values: 2, 2, 2
+System.Management.Automation.RemoteException
+All results processed!
+
+Dumping 15 reports to disk at C:\Users\doubl\Mysite\apps\web\lhci-report...
+Done writing reports to disk.
+
+Done running autorun.
+exit=0

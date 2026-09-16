@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import { SITE } from '@/site';
+import { getPosts, getProjects, projectUrl } from '@/lib/content';
+import { TOOLS } from '@/lib/tools';
+
+const posts = (await getPosts()).slice(0, 5);
+const projects = (await getProjects()).slice(0, 4);
+---
+
+<BaseLayout title={SITE.title} description={SITE.description}>
+  <section class="mb-14">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">Ivan Panev</h1>
+    <p class="mt-4 max-w-prose text-lg text-fg-muted">
+      Site reliability engineer, former network engineer, security and automation by inclination. This is where
+      I write things down properly: essays, notes on what I am building, and a few tools I keep reaching for.
+    </p>
+    <p class="mt-5 flex flex-wrap gap-3 text-sm">
+      <a class="btn" href="/blog">Read the blog</a>
+      <a class="btn" href="/projects">Browse projects</a>
+      <a class="btn" href="/pgp">PGP key</a>
+    </p>
+  </section>
+
+  <section class="mb-14" aria-labelledby="latest">
+    <h2 id="latest" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Latest writing</h2>
+    <div class="space-y-8">{posts.map((p) => <PostCard post={p} />)}</div>
+  </section>
+
+  <section class="mb-14" aria-labelledby="projects">
+    <h2 id="projects" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Projects</h2>
+    <ul class="grid gap-3 sm:grid-cols-2">
+      {
+        projects.map((p) => (
+          <li class="card p-4">
+            <a href={projectUrl(p)} class="font-semibold hover:underline">{p.data.title}</a>
+            <p class="mt-1 text-sm text-fg-muted">{p.data.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="tools">
+    <h2 id="tools" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Tools</h2>
+    <ul class="grid gap-3 sm:grid-cols-3">
+      {
+        TOOLS.map((t) => (
+          <li class="card p-4">
+            <a href={t.href} class="font-semibold hover:underline">{t.name}</a>
+            <p class="mt-1 text-sm text-fg-muted">{t.description}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

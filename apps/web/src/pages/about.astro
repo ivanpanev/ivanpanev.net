@@ -1,0 +1,31 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/site';
+---
+
+<BaseLayout title="About" description="Who runs this site and how to reach him.">
+  <article class="prose">
+    <h1>About</h1>
+    <p>
+      I am a site reliability engineer. Before that I was a network engineer, with a bias towards security and
+      automation that never went away. I like systems that fail loudly, documentation that tells the truth, and
+      tools that work offline.
+    </p>
+    <h2>Contact</h2>
+    <p>
+      Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. If it matters, encrypt it: the key is on the
+      <a href="/pgp">PGP page</a> and discoverable via WKD, so <code>gpg --locate-keys {SITE.email}</code> just works.
+    </p>
+    <h2>This site</h2>
+    <p>
+      Static, no tracking, no third-party requests. How it is built is documented in
+      <a href="/projects/site-platform">the platform notes</a>; the source, including every architecture decision,
+      is on <a href="https://github.com/ivanpanev/ivanpanev.net">GitHub</a>.
+    </p>
+    <h2>Colophon</h2>
+    <p>
+      Inter and JetBrains Mono, self-hosted. Three skins and a light/dark theme, picked randomly the first time you
+      visit and remembered afterwards; change them from the toggle in the header.
+    </p>
+  </article>
+</BaseLayout>

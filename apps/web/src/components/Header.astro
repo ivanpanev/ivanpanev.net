@@ -1,0 +1,40 @@
+---
+import { NAV, SITE } from '@/site';
+import ThemeToggle from '@/components/islands/ThemeToggle';
+import { canonicalPath } from '@/lib/urls';
+
+const current = canonicalPath(Astro.url.pathname);
+const isActive = (href: string) => current === href || current.startsWith(href + '/');
+---
+
+<header class="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur supports-[backdrop-filter]:bg-canvas/70">
+  <div class="mx-auto flex h-14 max-w-[var(--wiki-width)] items-center gap-2 px-4 sm:gap-4 sm:px-6">
+    <a href="/" class="flex shrink-0 items-center gap-2 whitespace-nowrap font-semibold tracking-tight" aria-label={`${SITE.name} home`}>
+      <span class="inline-block h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true"></span>
+      <span class="hidden min-[420px]:inline">{SITE.name}</span>
+    </a>
+    <!-- On narrow screens the nav scrolls horizontally inside the bar instead of widening the page. -->
+    <nav
+      aria-label="Primary"
+      class="ml-auto flex min-w-0 items-center gap-0.5 overflow-x-auto whitespace-nowrap text-sm [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden"
+    >
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class:list={[
+              'rounded-md px-2 py-1.5 text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-2.5',
+              isActive(item.href) && 'bg-surface-2 text-fg',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="shrink-0">
+      <ThemeToggle client:idle />
+    </div>
+  </div>
+</header>

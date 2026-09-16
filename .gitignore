@@ -15,6 +15,10 @@ apps/web/.wrangler/
 .pnpm-store/
 *.tsbuildinfo
 .lighthouseci/
+apps/web/lhci-report/
+apps/web/playwright-report/
+apps/web/test-results/
+apps/web/coverage/
 
 # --- Go ---
 apps/notebook-api/bin/
@@ -61,3 +65,10 @@ apps/notebook-api/*.test
 # --- Review evidence that is large or generated ---
 docs/reviews/evidence/**/*.log
 docs/reviews/evidence/**/node_modules/
+
+# OpenPGP: only the public key is ever committed; belt and braces.
+*.sec.asc
+*secret*.asc
+*private*.asc
+*.gpg
+

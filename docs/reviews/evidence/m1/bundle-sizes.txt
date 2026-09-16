@@ -1,0 +1,16 @@
+file	bytes	gzip
+BaseLayout.Dey3d19H.css	29763	6756
+CopyButton.CFyIN1O7.js	711	473
+PagefindConfig.astro_astro_type_script_index_0_lang.BMZE4sqk.js	156834	38858
+SecretGenerator.B7vmKG5t.js	15093	6673
+Sidebar.C7m5_VGN.css	32272	5377
+SubnetCalculator.DAb38WRq.js	11504	4545
+TextCounter.DPNiALen.js	4355	1960
+ThemeToggle.2IFKF8My.js	3875	1630
+Verifier.D0jq1GZS.js	376578	127140
+client.Buyw3Q1S.js	212931	65683
+jsx-runtime.DK-X9XDJ.js	424	295
+page.BDh2vuYI.js	2487	1118
+react.DJY1zw8Z.js	7899	3010
+
+dist total bytes: 3909367

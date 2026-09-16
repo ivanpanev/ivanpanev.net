@@ -42,6 +42,7 @@ apps/notebook-api/*.test
 **/crash.log
 **/tfplan
 **/tfplan.*
+**/tfplan-*
 **/backend.hcl
 
 # --- Cluster credentials (never commit) ---

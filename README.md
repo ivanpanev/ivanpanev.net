@@ -22,11 +22,13 @@ Start with [docs/architecture.md](docs/architecture.md) and the
 | `k8s/infrastructure/` | Platform services: cloudflared, Gateway, cert-manager issuers, CloudNativePG operator, kube-prometheus-stack, Loki, Alloy. |
 | `k8s/apps/` | Workloads (notebook-api and later services), base + per-cluster overlays. |
 | `docs/adr/` | Architecture Decision Records. |
-| `docs/runbooks/` | Operational procedures: bootstrap, teardown, restore drill, key ceremony. |
+| `docs/runbooks/` | Operational procedures: bootstrap, teardown, restore drill, incidents, key ceremony. |
+| `docs/cost.md` | Projected vs actual Hetzner spend. |
+| `docs/migration-readiness.md` | Checklist for rebuilding on home hardware. |
 | `docs/reviews/` | Gauntlet reviews: critic rubric, per-milestone reports, evidence, backlog. |
 | `docs/security/` | Threat models. |
 | `scripts/` | Developer setup and helper scripts (PowerShell and POSIX sh). |
-| `.github/workflows/` | CI: `hygiene.yml` (secret scan, SOPS check, shellcheck, line endings) now; site deploy, service build/sign/publish, manifest validation added with their components. |
+| `.github/workflows/` | CI: `hygiene.yml`, `web.yml`, `terraform.yml`, `k8s-validate.yml`, `notebook-api.yml`. |
 | `renovate.json` | Dependency updates (npm, Go, Actions SHAs, Terraform, Helm charts, toolchain pins). |
 
 ## Getting started

@@ -30,6 +30,7 @@ apps/notebook-api/*.test
 **/.terraform.lock.hcl.bak
 **/terraform.tfstate
 **/terraform.tfstate.backup
+**/terraform.tfstate.*.backup
 # Plaintext variable files are ignored; SOPS-encrypted (*.enc.tfvars[.json])
 # and example files are tracked (see .sops.yaml, docs/runbooks/secrets.md).
 **/*.tfvars
@@ -41,6 +42,7 @@ apps/notebook-api/*.test
 **/crash.log
 **/tfplan
 **/tfplan.*
+**/backend.hcl
 
 # --- Cluster credentials (never commit) ---
 **/kubeconfig
@@ -61,6 +63,8 @@ apps/notebook-api/*.test
 .env
 .env.*
 !.env.example
+tokens.txt
+**/tokens.txt
 
 # --- Review evidence that is large or generated ---
 docs/reviews/evidence/**/*.log

@@ -1,0 +1,1 @@
+chart=argo-cd version=10.9.1 values=k8s/bootstrap/argocd/values.yaml lines=33859 exit=0

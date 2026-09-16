@@ -1,0 +1,8 @@
+$ sops filestatus k8s/apps/notebook-api/base/cnpg-s3.secret.yaml
+{"encrypted":true}
+
+Recipients in file metadata (public):
+  age1nj2j4yjxq2ckjp2qqperd3mxnkmfak62vnyselafdrumzknzq4vqrsqkt0
+  age1fkgauddyappmru0m4nvwgv3fc7l3ekj83q3yh86kakm83y9pjf6qszpq9k
+Keys: ACCESS_KEY_ID, ACCESS_SECRET_KEY (values ENC[AES256_GCM,...])
+exit=0

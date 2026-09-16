@@ -1,0 +1,8 @@
+NAMESPACE      NAME                      MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+cert-manager   cert-manager              N/A             1                 1                     3h8m
+cert-manager   cert-manager-cainjector   N/A             1                 1                     3h8m
+cert-manager   cert-manager-webhook      N/A             1                 1                     3h8m
+cloudflared    cloudflared               1               N/A               1                     52m
+kube-system    cilium-operator           N/A             1                 1                     3h8m
+kube-system    coredns                   1               N/A               1                     30m
+kube-system    metrics-server            N/A             1                 1                     3h8m

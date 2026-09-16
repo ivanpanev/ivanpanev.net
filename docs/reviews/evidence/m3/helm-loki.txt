@@ -1,0 +1,1 @@
+﻿chart=loki version=18.11.7 values=k8s/infrastructure/loki/values.yaml lines=568 exit=0

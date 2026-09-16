@@ -1,0 +1,15 @@
+grafana:
+HTTP/1.1 302 Found
+Location: https://throbbing-disk-6041.cloudflareaccess.com/cdn-cgi/access/login/grafana.ivanpanev.net?kid=<redacted>
+
+argocd:
+HTTP/1.1 302 Found
+Location: https://throbbing-disk-6041.cloudflareaccess.com/cdn-cgi/access/login/argocd.ivanpanev.net?kid=<redacted>
+
+hubble:
+HTTP/1.1 302 Found
+Location: https://throbbing-disk-6041.cloudflareaccess.com/cdn-cgi/access/login/hubble.ivanpanev.net?kid=<redacted>
+
+notes-api:
+HTTP/1.1 404 Not Found
+

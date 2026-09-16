@@ -1,0 +1,1 @@
+﻿chart=k8s-monitoring version=4.5.2 values=k8s/infrastructure/k8s-monitoring/values.yaml lines=1026 exit=0

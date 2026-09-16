@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: notebook-api
+  version: "1"
+  description: >
+    Passcode-protected encrypted notebook (ADR-0009). The server stores opaque
+    ciphertext. Clients send notebookId = base64url(SHA-256(lookupKey)) and
+    X-Auth = base64url(SHA-256(authKey)). The server stores SHA-256(authProof).
+servers:
+  - url: https://notes-api.ivanpanev.net
+paths:
+  /healthz:
+    get:
+      operationId: healthz
+      responses:
+        "200":
+          description: process is up
+  /readyz:
+    get:
+      operationId: readyz
+      responses:
+        "200":
+          description: database reachable
+        "503":
+          description: not ready
+  /metrics:
+    get:
+      operationId: metrics
+      responses:
+        "200":
+          description: Prometheus text
+  /openapi.yaml:
+    get:
+      operationId: openapi
+      responses:
+        "200":
+          description: this document
+  /v1/notebooks/{id}:
+    put:
+      operationId: putNotebook
+      parameters:
+        - $ref: "#/components/parameters/notebookId"
+        - $ref: "#/components/parameters/ttl"
+      security:
+        - authProof: []
+      responses:
+        "200":
+          description: created or expiry extended
+        "400":
+          description: invalid id
+        "401":
+          description: missing/invalid X-Auth, or proof does not match
+  /v1/notebooks/{id}/items:
+    get:
+      operationId: listItems
+      parameters:
+        - $ref: "#/components/parameters/notebookId"
+      responses:
+        "200":
+          description: item metadata; empty list if unknown (no existence oracle)
+        "400":
+          description: invalid id
+    post:
+      operationId: postItem
+      parameters:
+        - $ref: "#/components/parameters/notebookId"
+      security:
+        - authProof: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewItem"
+      responses:
+        "201":
+          description: stored
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "404":
+          description: notebook missing
+        "413":
+          description: item or notebook cap
+  /v1/notebooks/{id}/extend:
+    post:
+      operationId: extendNotebook
+      parameters:
+        - $ref: "#/components/parameters/notebookId"
+      security:
+        - authProof: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ttlSeconds:
+                  type: integer
+                  minimum: 3600
+                  maximum: 604800
+      responses:
+        "200":
+          description: expiry moved
+        "401":
+          description: unauthorized
+        "404":
+          description: missing
+  /v1/items/{itemId}:
+    get:
+      operationId: getItem
+      parameters:
+        - $ref: "#/components/parameters/itemId"
+      responses:
+        "200":
+          description: nonce + ciphertext
+        "404":
+          description: missing or expired
+    delete:
+      operationId: deleteItem
+      parameters:
+        - $ref: "#/components/parameters/itemId"
+      security:
+        - authProof: []
+      responses:
+        "204":
+          description: deleted
+        "401":
+          description: unauthorized
+        "404":
+          description: missing
+components:
+  securitySchemes:
+    authProof:
+      type: apiKey
+      in: header
+      name: X-Auth
+      description: unpadded base64url of SHA-256(authKey), 32 bytes
+  parameters:
+    notebookId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        description: unpadded base64url of SHA-256(lookupKey), 32 bytes
+    itemId:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ttl:
+      name: ttl
+      in: query
+      schema:
+        type: string
+        description: Go duration or seconds (clamped to 1h–7d)
+  schemas:
+    NewItem:
+      type: object
+      required: [kind, nonce, ciphertext]
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          enum: [text, code, image]
+        nonce:
+          type: string
+          description: unpadded base64url, 12 bytes
+        ciphertext:
+          type: string
+          description: unpadded base64url AES-256-GCM output
+        ttlSeconds:
+          type: integer
+          minimum: 3600
+          maximum: 604800

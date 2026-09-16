@@ -1,0 +1,6 @@
+﻿
+  exec.enabled: "false"
+  kustomize.buildOptions: --enable-alpha-plugins --enable-exec --enable-helm
+  url: https://argocd.ivanpanev.net
+
+

@@ -1,0 +1,120 @@
+# Applied once by helm, then self-managed by the Application in
+# k8s/clusters/hetzner/applications/argocd.yaml (ADR-0006).
+# Chart: argo/argo-cd 10.9.1 (app v3.5.3, PIN_ARGOCD).
+
+global:
+  domain: argocd.ivanpanev.net
+  networkPolicy:
+    create: true
+
+crds:
+  install: true
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+configs:
+  params:
+    server.insecure: "true"
+  cm:
+    url: https://argocd.ivanpanev.net
+    # Kustomize exec plugins (KSOPS) only. The UI pod-exec terminal stays off.
+    kustomize.buildOptions: "--enable-alpha-plugins --enable-exec --enable-helm"
+    timeout.reconciliation: 180s
+  rbac:
+    policy.default: role:readonly
+    policy.csv: |
+      g, i.panev99@gmail.com, role:admin
+
+server:
+  replicas: 1
+  extraArgs:
+    - --insecure
+  ingress:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+controller:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+repoServer:
+  replicas: 1
+  # ADR-0006: read-only root, no service-account token. Git + KSOPS need only
+  # the age key volume and the emptyDir that holds the ksops binary.
+  automountServiceAccountToken: false
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+    - name: sops-age
+      secret:
+        secretName: sops-age
+  volumeMounts:
+    - name: custom-tools
+      mountPath: /usr/local/bin/ksops
+      subPath: ksops
+    - name: sops-age
+      mountPath: /home/argocd/sops-age
+      readOnly: true
+  env:
+    - name: SOPS_AGE_KEY_FILE
+      value: /home/argocd/sops-age/keys.txt
+  initContainers:
+    - name: install-ksops
+      image: viaductoss/ksops:v4.5.1@sha256:4def9fdd4e2f850265740ebe9592c5455d19b76891e88e602df8b52d74b95334
+      command:
+        - /usr/local/bin/ksops
+        - install
+        - /custom-tools
+      volumeMounts:
+        - name: custom-tools
+          mountPath: /custom-tools
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+        seccompProfile:
+          type: RuntimeDefault
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+redis:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+applicationSet:
+  enabled: false

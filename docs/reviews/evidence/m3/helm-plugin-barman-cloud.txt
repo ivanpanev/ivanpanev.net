@@ -1,0 +1,1 @@
+chart=plugin-barman-cloud version=0.8.0 values=k8s/infrastructure/barman-cloud/values.yaml lines=1251 exit=0

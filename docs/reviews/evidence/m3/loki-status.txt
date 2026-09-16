@@ -1,0 +1,5 @@
+NAME         READY   STATUS    RESTARTS   AGE     IP             NODE      NOMINATED NODE   READINESS GATES
+pod/loki-0   1/1     Running   0          5m20s   10.0.130.164   ivp-w-1   <none>           <none>
+
+NAME                    READY   AGE    CONTAINERS   IMAGES
+statefulset.apps/loki   1/1     125m   loki         docker.io/grafana/loki:3.7.7

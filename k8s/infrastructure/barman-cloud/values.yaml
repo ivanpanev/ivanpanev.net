@@ -1,0 +1,11 @@
+# Chart: cnpg/plugin-barman-cloud 0.8.0. ObjectStore CRs arrive in M4.
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

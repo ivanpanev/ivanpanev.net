@@ -99,8 +99,19 @@ describe('head script', () => {
     expect(w.attrs['data-skin']).toBe('ember');
   });
 
-  it('never throws when storage is blocked', () => {
+  it('paints theme and skin when storage is blocked', () => {
     const w = fakeWindow({ noStorage: true, prefersDark: true });
     expect(() => vm.runInNewContext(src, w.ctx)).not.toThrow();
+    expect(w.attrs['data-theme']).toBe('dark');
+    expect(w.attrs['data-theme-pref']).toBe('system');
+    expect(SKIN_IDS).toContain(w.attrs['data-skin']);
+  });
+
+  it('falls back to the first skin if crypto is also unavailable', () => {
+    const w = fakeWindow({ noStorage: true, prefersDark: false });
+    (w.ctx as { crypto?: unknown }).crypto = undefined;
+    expect(() => vm.runInNewContext(src, w.ctx)).not.toThrow();
+    expect(w.attrs['data-theme']).toBe('light');
+    expect(w.attrs['data-skin']).toBe(SKIN_IDS[0]);
   });
 });

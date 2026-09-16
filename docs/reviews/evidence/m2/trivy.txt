@@ -1,0 +1,7 @@
+command: trivy config infra/terraform
+
+could not execute: trivy (binary not installed on this workstation; not part
+of scripts/versions.env / setup-windows.ps1). Static review of the HCL was
+done via terraform validate + tflint instead.
+
+exit=n/a

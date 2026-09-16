@@ -2,7 +2,7 @@
 title: "Encrypted quick notebook"
 section: software
 order: 10
-status: idea
+status: active
 stack: [Go, PostgreSQL, WebCrypto, Argon2id]
 summary: "Paste text, code or an image behind a passcode; the server stores ciphertext it cannot read and forgets it after a week."
 updated: 2026-09-16
@@ -42,4 +42,5 @@ generated passphrase and says so plainly.
 
 ## Status
 
-Design accepted (ADR-0009). Implementation is Milestone 4.
+Design accepted (ADR-0009). Implementation is in `apps/notebook-api` and
+`/notes`. Threat model: `docs/security/notebook-threat-model.md`.

@@ -1,0 +1,136 @@
+# Plugin metrics (Barman Cloud CNPG-I), not the deprecated cnpg_collector_* gauges
+# which stay at 0 after migrating off in-tree Barman.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: platform-alerts
+spec:
+  groups:
+    - name: ivp.platform
+      rules:
+        - alert: NodePressure
+          expr: |
+            kube_node_status_condition{condition=~"MemoryPressure|DiskPressure|PIDPressure",status="true"} == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.node }} reports {{ $labels.condition }}"
+            runbook: docs/runbooks/incidents.md#nodepressure
+        - alert: PVCNearFull
+          expr: |
+            (
+              kubelet_volume_stats_used_bytes
+              / kubelet_volume_stats_capacity_bytes
+            ) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is above 85%"
+            runbook: docs/runbooks/incidents.md#pvcnearfull
+        - alert: CNPGBackupMissing
+          expr: |
+            barman_cloud_cloudnative_pg_io_last_available_backup_timestamp > 0
+            and (time() - barman_cloud_cloudnative_pg_io_last_available_backup_timestamp) > 36 * 3600
+          for: 30m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG cluster {{ $labels.cluster }} has no successful backup in 36h"
+            runbook: docs/runbooks/incidents.md#cnpgbackupmissing
+        - alert: CNPGBackupFailed
+          expr: |
+            barman_cloud_cloudnative_pg_io_last_failed_backup_timestamp > 0
+            and (time() - barman_cloud_cloudnative_pg_io_last_failed_backup_timestamp) < 24 * 3600
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG cluster {{ $labels.cluster }} failed a backup in the last 24h"
+            runbook: docs/runbooks/incidents.md#cnpgbackupfailed
+        - alert: CloudflaredDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="cloudflared",deployment="cloudflared"} < 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No cloudflared replica is available"
+            runbook: docs/runbooks/incidents.md#cloudflareddown
+        - alert: CertificateExpiring
+          expr: |
+            (
+              certmanager_certificate_expiration_timestamp_seconds
+              - time()
+            ) < 14 * 24 * 3600
+            and on(namespace, name)
+            certmanager_certificate_ready_status{condition="True"} == 1
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in under 14 days"
+            runbook: docs/runbooks/incidents.md#certificateexpiring
+        - alert: CNPGWALArchivingStuck
+          expr: |
+            max by (namespace, cluster) (cnpg_pg_stat_archiver_seconds_since_last_archival) > 900
+            or max by (namespace, cluster) (cnpg_collector_pg_wal_archive_status{value="ready"}) > 16
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG cluster {{ $labels.cluster }} has not archived WAL in 15m"
+            runbook: docs/runbooks/incidents.md#cnpgwalarchivingstuck
+        - alert: NotebookAPI5xx
+          expr: |
+            sum(rate(http_requests_total{job="notebook-api",code=~"5.."}[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "notebook-api 5xx rate is above 0.05/s"
+            runbook: docs/runbooks/incidents.md#notebookapi5xx
+        - alert: NotebookAPILatency
+          expr: |
+            histogram_quantile(
+              0.99,
+              sum by (le) (rate(http_request_duration_seconds_bucket{job="notebook-api"}[5m]))
+            ) > 2
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "notebook-api p99 latency is above 2s"
+            runbook: docs/runbooks/incidents.md#notebookapilatency
+        - alert: AuthentikDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="authentik",deployment="authentik-server"} < 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No authentik-server replica is available"
+            runbook: docs/runbooks/incidents.md#authentikdown
+        - alert: LokiNotReady
+          expr: |
+            kube_statefulset_status_replicas_ready{namespace="loki",statefulset="loki"} < 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Loki has no ready replica"
+            runbook: docs/runbooks/incidents.md#lokinotready
+        - alert: LokiObjectStoreErrors
+          expr: |
+            sum(rate(loki_objstore_bucket_operation_failures_total[10m])) > 0
+            or sum(rate(loki_objstore_bucket_operations_total{status_code=~"403|5.."}[10m])) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Loki Thanos-objstore PutObject is failing while the pod may still be Ready (M3 Access Denied class)"
+            runbook: docs/runbooks/incidents.md#lokiobjectstoreerrors

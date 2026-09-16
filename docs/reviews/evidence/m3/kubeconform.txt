@@ -1,0 +1,28 @@
+==> kubeconform static manifests
+==> kustomize build k8s/infrastructure/gateway
+Summary: 12 resources found parsing stdin - Valid: 11, Invalid: 0, Errors: 0, Skipped: 1
+==> kustomize build k8s/infrastructure/cloudflared
+Summary: 6 resources found parsing stdin - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+==> kustomize build k8s/infrastructure/cert-manager-issuers
+Summary: 2 resources found parsing stdin - Valid: 2, Invalid: 0, Errors: 0, Skipped: 0
+==> kustomize build k8s/infrastructure/kube-prometheus-stack/resources
+Summary: 4 resources found parsing stdin - Valid: 4, Invalid: 0, Errors: 0, Skipped: 0
+==> kustomize build k8s/infrastructure/loki/resources
+Summary: 2 resources found parsing stdin - Valid: 2, Invalid: 0, Errors: 0, Skipped: 0
+==> kustomize build k8s/infrastructure/cnpg-operator/resources
+Summary: 1 resource found parsing stdin - Valid: 1, Invalid: 0, Errors: 0, Skipped: 0
+==> kustomize build k8s/clusters/hetzner
+Summary: 11 resources found parsing stdin - Valid: 11, Invalid: 0, Errors: 0, Skipped: 0
+==> helm template argo-cd 10.9.1 (k8s/bootstrap/argocd/values.yaml)
+Summary: 44 resources found parsing stdin - Valid: 41, Invalid: 0, Errors: 0, Skipped: 3
+==> helm template kube-prometheus-stack 91.4.1 (k8s/infrastructure/kube-prometheus-stack/values.yaml)
+Summary: 105 resources found parsing stdin - Valid: 105, Invalid: 0, Errors: 0, Skipped: 0
+==> helm template loki 18.11.7 (k8s/infrastructure/loki/values.yaml)
+Summary: 11 resources found parsing stdin - Valid: 11, Invalid: 0, Errors: 0, Skipped: 0
+==> helm template k8s-monitoring 4.5.2 (k8s/infrastructure/k8s-monitoring/values.yaml)
+Summary: 22 resources found parsing stdin - Valid: 21, Invalid: 0, Errors: 0, Skipped: 1
+==> helm template cloudnative-pg 0.29.0 (k8s/infrastructure/cnpg-operator/values.yaml)
+Summary: 24 resources found parsing stdin - Valid: 13, Invalid: 0, Errors: 0, Skipped: 11
+==> helm template plugin-barman-cloud 0.8.0 (k8s/infrastructure/barman-cloud/values.yaml)
+Summary: 12 resources found parsing stdin - Valid: 11, Invalid: 0, Errors: 0, Skipped: 1
+k8s-validate: ok

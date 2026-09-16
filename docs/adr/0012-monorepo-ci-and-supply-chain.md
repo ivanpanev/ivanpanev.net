@@ -19,8 +19,9 @@ end to end: signed commits, signed images, provenance.
     build, push to GHCR tagged by commit SHA, cosign keyless signature and
     SLSA provenance attestation, then a commit that bumps the image tag in the
     cluster overlay so Argo CD deploys it.
-  - `k8s-validate.yml`: `kustomize build` for every Application plus
-    `kubeconform` and a linter on every PR.
+  - `k8s-validate.yml`: `kustomize build` / `helm template` for every
+    Application plus `kubeconform` on every PR. Encrypted SOPS files are
+    skipped (CI has no age key); `hygiene.yml` asserts they are encrypted.
 - Images live in GHCR (public repository, free). Kubernetes pulls by digest
   once the tag bump records it.
 - Commits are signed (SSH or OpenPGP key); `main` is protected and requires

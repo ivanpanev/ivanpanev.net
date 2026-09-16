@@ -1,0 +1,20 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Notes from '@/components/islands/Notes';
+---
+
+<BaseLayout
+  title="Notes"
+  description="Passcode-protected encrypted notebook. Ciphertext only on the server; keys never leave this browser."
+>
+  <h1 class="text-3xl font-bold tracking-tight">Notes</h1>
+  <p class="mt-2 max-w-prose text-fg-muted">
+    Paste text, code, or an image behind a passcode. Same passcode, any device, until it expires.
+  </p>
+  <div class="mt-8">
+    <Notes client:load />
+  </div>
+  <noscript>
+    <p class="card mt-6 p-4 text-sm">This notebook encrypts in the browser and needs JavaScript enabled.</p>
+  </noscript>
+</BaseLayout>

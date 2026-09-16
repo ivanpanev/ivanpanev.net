@@ -1,0 +1,18 @@
+==> argocd namespace + sops-age
+namespace/argocd created
+secret/sops-age created
+==> helm repo add
+"argo" already exists with the same configuration, skipping
+"prometheus-community" already exists with the same configuration, skipping
+"grafana-community" has been added to your repositories
+"grafana" already exists with the same configuration, skipping
+"cnpg" already exists with the same configuration, skipping
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "cnpg" chart repository
+...Successfully got an update from the "grafana-community" chart repository
+...Successfully got an update from the "argo" chart repository
+...Successfully got an update from the "grafana" chart repository
+...Successfully got an update from the "prometheus-community" chart repository
+Update Complete. ΓÄêHappy Helming!ΓÄê
+==> helm argocd 10.9.1
+Release "argocd" does not exist. Installing it now.

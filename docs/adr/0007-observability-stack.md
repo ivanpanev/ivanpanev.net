@@ -46,3 +46,10 @@ end-of-life around June 2026.
   Acceptable for now; alert on it.
 - Prometheus retention is local disk (PVC), lost on cluster rebuild; long-term
   metrics are not a Phase 1 requirement.
+
+## Revisions
+
+- 2026-09-16 (M3): OSS Loki Helm chart moved to `grafana-community/helm-charts`
+  after Grafana's chart became GEL-only (v7+). Values use
+  `deploymentMode: Monolithic`, the rename of `SingleBinary`. Alertmanager
+  delivers to ntfy (OD-2 closed: no extra Telegram bot to operate).

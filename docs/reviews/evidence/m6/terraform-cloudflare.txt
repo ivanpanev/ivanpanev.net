@@ -1,0 +1,6 @@
+terraform apply -auto-approve (Cloudflare root) 2026-09-16
+Plan: 2 to add, 1 to change, 0 to destroy.
+Added: cloudflare_dns_record.tunnel["auth"], cloudflare_zero_trust_access_application.admin["auth"]
+Changed: cloudflare_zero_trust_tunnel_cloudflared_config.cluster (ingress list insert of auth.ivanpanev.net)
+Apply complete! Resources: 2 added, 1 changed, 0 destroyed.
+No Hetzner root apply. No root-application.yaml apply.

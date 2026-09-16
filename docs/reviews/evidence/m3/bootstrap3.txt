@@ -1,0 +1,13 @@
+==> gateway retry
+namespace/gateway unchanged
+ciliumgatewayclassconfig.cilium.io/cluster-ip created
+gateway.gateway.networking.k8s.io/cilium-gateway-public unchanged
+gatewayclass.gateway.networking.k8s.io/cilium-clusterip unchanged
+httproute.gateway.networking.k8s.io/argocd configured
+httproute.gateway.networking.k8s.io/grafana configured
+httproute.gateway.networking.k8s.io/hubble configured
+referencegrant.gateway.networking.k8s.io/from-gateway unchanged
+referencegrant.gateway.networking.k8s.io/from-gateway unchanged
+networkpolicy.networking.k8s.io/allow-cloudflared-to-gateway unchanged
+==> cloudflared
+Error from server (NotFound): error when creating "STDIN": namespaces "cloudflared" not found

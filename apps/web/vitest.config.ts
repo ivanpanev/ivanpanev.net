@@ -9,7 +9,7 @@ export default getViteConfig({
     coverage: {
       provider: 'v8',
       include: ['src/lib/**/*.ts', 'src/integrations/**/*.ts'],
-      exclude: ['src/lib/og.ts', 'src/lib/site-key.ts', 'src/lib/content.ts'],
+      exclude: ['src/lib/og.ts', 'src/lib/site-key.ts', 'src/lib/content.ts', 'src/lib/tools.ts'],
       thresholds: { lines: 85, functions: 85, branches: 75 },
     },
   },

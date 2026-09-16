@@ -1,0 +1,44 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: notebook-restore
+  namespace: notebook-restore
+  annotations:
+    cnpg.io/skipWalArchiving: enabled
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18
+  enablePDB: false
+  storage:
+    size: 10Gi
+    storageClass: default
+  bootstrap:
+    recovery:
+      source: origin
+      database: notebook
+      owner: notebook
+  externalClusters:
+    - name: origin
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: notebook
+          serverName: notebook
+  monitoring:
+    enablePodMonitor: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  env:
+    - name: AWS_REGION
+      value: fsn1
+    - name: AWS_REQUEST_CHECKSUM_CALCULATION
+      value: when_required
+    - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+      value: when_required
+    - name: AWS_EC2_METADATA_DISABLED
+      value: "true"

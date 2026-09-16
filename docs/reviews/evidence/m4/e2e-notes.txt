@@ -1,0 +1,9 @@
+$ pnpm exec playwright test tests/e2e/notes.spec.ts --project=chromium
+  ok 2 [chromium] › notes › rejects a short passcode without calling the API
+  ok 1 [chromium] › notes › generated passphrase unlocks against a mocked API
+  2 passed
+
+$ pnpm exec playwright test tests/e2e/smoke.spec.ts --project=chromium -g "renders /notes"
+  ok 1 [chromium] › renders /notes without console errors or CSP violations
+  1 passed
+exit=0

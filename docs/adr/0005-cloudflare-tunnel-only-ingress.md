@@ -75,3 +75,8 @@ before they are exposed at all.
 - 2026-09-16 (M0-R1-F12): replaced the wildcard tunnel rule with explicit
   per-hostname rules and a 404 catch-all; added origin-side JWT validation in
   cloudflared and the Terraform hostnames invariant.
+- 2026-09-16 (M3): CiliumGatewayClassConfig on the deployed Cilium rejects
+  `service.type: ClusterIP` (only `LoadBalancer` and `NodePort`). The Gateway
+  class uses `NodePort`. The resulting Service still has a ClusterIP, which
+  remains the tunnel origin. No LoadBalancer is created (CCM Service
+  controller is off; Hetzner firewall does not expose NodePorts).

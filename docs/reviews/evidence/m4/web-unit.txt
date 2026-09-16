@@ -1,0 +1,20 @@
+$ pnpm test -- --coverage
+$ vitest run "--coverage"
+
+ Test Files  9 passed (9)
+      Tests  135 passed (135)
+   Duration  1.80s
+
+ % Coverage report from v8
+All files         |   94.73 |     87.4 |   96.15 |   96.84 |
+lib/notebook.ts   |   89.47 |       75 |     100 |   96.77 | 126,206
+
+Statements   : 94.73% ( 630/665 )
+Branches     : 87.4% ( 340/389 )
+Functions    : 96.15% ( 100/104 )
+Lines        : 96.84% ( 521/538 )
+exit=0
+
+Argon2id known-answer: VECTOR passcode vector-pass-12
+notebookId x_EVvABulmcPJTikMZdw1Tghv8polB0miTx78M8dHTI
+authProof _CScnpTPzwrBCk5DxB4HbWcZV8c2NZTgbrUZwwJW_0Q

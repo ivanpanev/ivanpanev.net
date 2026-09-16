@@ -154,7 +154,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/web
           packageManager: pnpm
-          command: versions upload --tag pr-${{ github.event.pull_request.number }} --message "${{ github.event.pull_request.title }}"
+          command: versions upload --tag pr-${{ github.event.pull_request.number }} --message ${{ github.sha }}
       - name: Preview URL to summary
         run: |
           {

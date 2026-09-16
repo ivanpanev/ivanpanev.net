@@ -1,0 +1,17 @@
+command: terraform plan (both roots)
+cwd: infra/terraform/{hetzner,cloudflare}
+
+Could not produce a complete plan: no Hetzner or Cloudflare credentials in
+this session.
+
+A Cloudflare plan with a dummy token that fails the provider's api_token
+charset check still parsed the module, created a plan for
+random_bytes.tunnel_secret, and listed outputs:
+
+  published_hostnames = argocd/grafana/hubble/notes-api.ivanpanev.net
+
+Live `terraform plan` on both roots is an operator verification step
+(docs/runbooks/cluster-bootstrap.md). Acceptance criterion "plan clean"
+cannot be proven here beyond `terraform validate`.
+
+exit=n/a

@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: notebook-api
+  namespace: notebook
+  labels:
+    release: kube-prometheus-stack
+    app.kubernetes.io/name: notebook-api
+spec:
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notebook-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s

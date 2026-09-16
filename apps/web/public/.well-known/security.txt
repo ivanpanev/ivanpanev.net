@@ -1,7 +1,8 @@
 Contact: mailto:security@ivanpanev.net
 Contact: https://ivanpanev.net/about
 Expires: 2027-09-01T00:00:00.000Z
-Encryption: https://ivanpanev.net/pgp
+Encryption: https://ivanpanev.net/pgp/ivan.asc
 Preferred-Languages: en, bg
 Canonical: https://ivanpanev.net/.well-known/security.txt
 Policy: https://ivanpanev.net/about
+

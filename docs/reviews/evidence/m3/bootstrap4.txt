@@ -1,0 +1,49 @@
+==> cert-manager issuer
+secret/cloudflare-api-token created
+clusterissuer.cert-manager.io/letsencrypt-cloudflare created
+certificate.cert-manager.io/wildcard-ivanpanev-net created
+==> cnpg
+namespace/cnpg-system created
+Release "cnpg" does not exist. Installing it now.
+NAME: cnpg
+LAST DEPLOYED: Wed Sep 16 11:57:52 2026
+NAMESPACE: cnpg-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+CloudNativePG operator should be installed in namespace "cnpg-system".
+You can now create a PostgreSQL cluster with 3 nodes as follows:
+
+cat <<EOF | kubectl apply -f -
+# Example of PostgreSQL cluster
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+  
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+EOF
+
+kubectl get -A cluster
+Release "plugin-barman-cloud" does not exist. Installing it now.
+NAME: plugin-barman-cloud
+LAST DEPLOYED: Wed Sep 16 11:58:05 2026
+NAMESPACE: cnpg-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+==> kube-prometheus-stack
+namespace/monitoring created
+secret/grafana-admin created
+secret/alertmanager-ntfy created
+Release "kube-prometheus-stack" does not exist. Installing it now.
+Error: failed to install CRD crds/crd-alertmanagerconfigs.yaml: conflict occurred while applying object /alertmanagerconfigs.monitoring.coreos.com apiextensions.k8s.io/v1, Kind=CustomResourceDefinition: Apply failed with 3 conflicts: conflicts with "talos":
+- .metadata.annotations.controller-gen.kubebuilder.io/version
+- .metadata.annotations.operator.prometheus.io/version
+- .spec.versions

@@ -1,97 +1,13 @@
 $ pnpm check
 $ astro check
-03:40:46 [content] Syncing content
-03:40:46 [content] Synced content
-03:40:46 [types] Generated 694ms
-03:40:46 [check] Getting diagnostics for Astro files in C:\Users\doubl\Mysite\apps\web...
-src/content.config.ts:36:12 - warning ts(6385): 'z' is deprecated.
-
-36     draft: z.boolean().default(false),
-              ~
-src/content.config.ts:35:14 - warning ts(6385): 'z' is deprecated.
-
-35     updated: z.coerce.date().optional(),
-                ~
-src/content.config.ts:34:14 - warning ts(6385): 'z' is deprecated.
-
-34     summary: z.string().min(1).max(300),
-                ~
-src/content.config.ts:33:11 - warning ts(6385): 'z' is deprecated.
-
-33     repo: z.url({ protocol: /^https$/ }).optional(),
-             ~
-src/content.config.ts:32:20 - warning ts(6385): 'z' is deprecated.
-
-32     stack: z.array(z.string()).default([]),
-                      ~
-src/content.config.ts:32:12 - warning ts(6385): 'z' is deprecated.
-
-32     stack: z.array(z.string()).default([]),
-              ~
-src/content.config.ts:31:13 - warning ts(6385): 'z' is deprecated.
-
-31     status: z.enum(['idea', 'active', 'done', 'archived']).default('active'),
-               ~
-src/content.config.ts:30:12 - warning ts(6385): 'z' is deprecated.
-
-30     order: z.number().int().default(100),
-              ~
-src/content.config.ts:29:14 - warning ts(6385): 'z' is deprecated.
-
-29     section: z.enum(sectionIds),
-                ~
-src/content.config.ts:28:12 - warning ts(6385): 'z' is deprecated.
-
-28     title: z.string().min(1).max(120),
-              ~
-src/content.config.ts:27:11 - warning ts(6385): 'z' is deprecated.
-
-27   schema: z.object({
-             ~
-src/content.config.ts:21:13 - warning ts(6385): 'z' is deprecated.
-
-21     signed: z.boolean().default(false),
-               ~
-src/content.config.ts:15:12 - warning ts(6385): 'z' is deprecated.
-
-15     draft: z.boolean().default(false),
-              ~
-src/content.config.ts:14:19 - warning ts(6385): 'z' is deprecated.
-
-14     tags: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
-                     ~
-src/content.config.ts:14:11 - warning ts(6385): 'z' is deprecated.
-
-14     tags: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
-             ~
-src/content.config.ts:13:14 - warning ts(6385): 'z' is deprecated.
-
-13     summary: z.string().min(1).max(300),
-                ~
-src/content.config.ts:12:14 - warning ts(6385): 'z' is deprecated.
-
-12     updated: z.coerce.date().optional(),
-                ~
-src/content.config.ts:11:11 - warning ts(6385): 'z' is deprecated.
-
-11     date: z.coerce.date(),
-             ~
-src/content.config.ts:10:12 - warning ts(6385): 'z' is deprecated.
-
-10     title: z.string().min(1).max(120),
-              ~
-src/content.config.ts:9:11 - warning ts(6385): 'z' is deprecated.
-
-9   schema: z.object({
-            ~
-src/content.config.ts:1:28 - warning ts(6385): 'z' is deprecated.
-
-1 import { defineCollection, z } from 'astro:content';
-                             ~
-
-Result (66 files): 
+04:25:28 [content] Syncing content
+04:25:28 [content] Content config changed
+04:25:28 [content] Clearing content store
+04:25:28 [content] Synced content
+04:25:28 [types] Generated 790ms
+04:25:28 [check] Getting diagnostics for Astro files in C:\Users\doubl\Mysite\apps\web...
+Result (67 files):
 - 0 errors
 - 0 warnings
-- 21 hints
-
+- 0 hints
 exit=0

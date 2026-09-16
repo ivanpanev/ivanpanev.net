@@ -1,0 +1,3 @@
+labels status=success namespaces=argocd,cert-manager,cloudflared,cnpg-system,kube-system,loki,monitoring
+query cloudflared status=success streams=1 values=2 namespace=cloudflared pod=cloudflared-7bd9bfdbc-bg2dx
+sample: 2026-09-16T09:43:46Z INF Registered tunnel connection connIndex=3 connection=3f6

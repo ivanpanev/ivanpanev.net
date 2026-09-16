@@ -1,0 +1,20 @@
+# Chart: cnpg/cloudnative-pg 0.29.0 (app 1.30.0). Cluster CRs arrive in M4.
+
+crds:
+  create: true
+
+config:
+  clusterWide: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+monitoring:
+  podMonitorEnabled: true
+  grafanaDashboard:
+    create: true

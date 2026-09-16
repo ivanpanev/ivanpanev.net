@@ -1,0 +1,186 @@
+# Chart: prometheus-community/kube-prometheus-stack 91.4.1
+# Grafana consumes Cloudflare Access JWTs (ADR-0014). Admin password is a
+# SOPS Secret (grafana-admin) for the provisioning API, not the login form.
+
+fullnameOverride: kube-prometheus-stack
+
+crds:
+  enabled: false
+  # Prometheus Operator CRDs are already on the cluster (hcloud-k8s / Talos
+  # field manager). Re-applying them from this chart conflicts.
+
+defaultRules:
+  disabled:
+    etcd: true
+    kubeControllerManager: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
+    kubeProxy: true
+
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+kubelet:
+  enabled: true
+  serviceMonitor:
+    https: true
+    insecureSkipVerify: true
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    retentionSize: "18GB"
+    scrapeInterval: 30s
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 3Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: default
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 2000
+      seccompProfile:
+        type: RuntimeDefault
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: ntfy
+      group_by: [alertname, namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - receiver: "null"
+          matchers:
+            - alertname = Watchdog
+    receivers:
+      - name: "null"
+      - name: ntfy
+        webhook_configs:
+          - url_file: /etc/alertmanager/secrets/alertmanager-ntfy/url
+            send_resolved: true
+  alertmanagerSpec:
+    replicas: 1
+    retention: 120h
+    secrets:
+      - alertmanager-ntfy
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: default
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+
+grafana:
+  replicas: 1
+  ingress:
+    enabled: false
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  grafana.ini:
+    server:
+      domain: grafana.ivanpanev.net
+      root_url: https://grafana.ivanpanev.net
+    users:
+      auto_assign_org_role: Viewer
+    auth:
+      disable_login_form: true
+      disable_signout_menu: true
+    auth.anonymous:
+      enabled: false
+    auth.jwt:
+      enabled: true
+      header_name: Cf-Access-Jwt-Assertion
+      email_claim: email
+      username_claim: email
+      jwk_set_url: https://throbbing-disk-6041.cloudflareaccess.com/cdn-cgi/access/certs
+      cache_ttl: 60m
+      auto_sign_up: true
+      url_login: true
+      # AUD from terraform output access_applications.grafana.aud (not secret).
+      expect_claims: '{"aud":["6bf0467094c646ef9068221887dbbbe1babee6f6d44d38c2c2f821cefee3c26a"]}'
+      role_attribute_path: "contains(email, 'i.panev99@gmail.com') && 'GrafanaAdmin' || 'Viewer'"
+      role_attribute_strict: true
+      allow_assign_grafana_admin: true
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.loki.svc.cluster.local:3100
+      jsonData:
+        maxLines: 1000
+      editable: false
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      label: grafana_dashboard
+      labelValue: "1"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 64Mi
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi

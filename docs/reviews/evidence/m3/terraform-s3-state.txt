@@ -1,0 +1,14 @@
+aws_s3_bucket.this["cnpg"]
+aws_s3_bucket.this["etcd"]
+aws_s3_bucket.this["loki"]
+aws_s3_bucket.this["tfstate"]
+aws_s3_bucket_versioning.this["cnpg"]
+aws_s3_bucket_versioning.this["etcd"]
+aws_s3_bucket_versioning.this["loki"]
+aws_s3_bucket_versioning.this["tfstate"]
+
+# aws_s3_bucket_public_access_block.this[*] removed from state 2026-09-16
+# (already deleted live via DeletePublicAccessBlock). buckets.tf has no PAB resource.
+
+# terraform plan -target=aws_s3_bucket_versioning.this["loki"]
+# No changes. Live Status=Suspended matches config.

@@ -1,0 +1,17 @@
+﻿CAUSE: Hetzner Ceph aws_s3_bucket_public_access_block made authenticated
+PutObject 403 AccessDenied (empty Message) while ListObjectsV2 200 and ACL
+FULL_CONTROL. The Object Storage key already had write (CreateBucket + PUT
+on a fresh bucket succeeded). Versioning Enabled on ivp-loki also 403'd PUT
+after PAB was gone; tfstate/cnpg/etcd stay Enabled and PUT 200.
+
+NOW:
+VERSIONING 200 Status=Suspended
+PAB 404 NoSuchPublicAccessBlockConfiguration
+POLICY 404 NoSuchBucketPolicy
+PUT probe/round3.txt 200
+LIST objects>=126 prefixes fake/=114 (chunks) index/ (loki_index_20712 + delete_requests) probe/=10
+INDEX_KEY index/loki_index_20712/fake/...tsdb.gz
+CHUNK_KEY fake/11e79925a66b076a/...
+Terraform: PAB resources state-rm'd; buckets.tf has no PAB resource; loki
+versioning Suspended matches live (plan no-op).
+

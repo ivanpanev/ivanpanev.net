@@ -1,0 +1,24 @@
+# Cilium on this cluster accepts only LoadBalancer|NodePort for
+# CiliumGatewayClassConfig.spec.service.type. NodePort still allocates a
+# ClusterIP, which is what cloudflared uses (ADR-0005 origin). No Hetzner LB.
+# The CRD is namespaced; GatewayClass.parametersRef must set namespace.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumGatewayClassConfig
+metadata:
+  name: cluster-ip
+  namespace: gateway
+spec:
+  service:
+    type: NodePort
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: cilium-clusterip
+spec:
+  controllerName: io.cilium/gateway-controller
+  parametersRef:
+    group: cilium.io
+    kind: CiliumGatewayClassConfig
+    name: cluster-ip
+    namespace: gateway

@@ -1,0 +1,5 @@
+k8s/infrastructure/cert-manager-issuers/cloudflare-api-token.secret.yaml {"encrypted":true}
+k8s/infrastructure/cloudflared/tunnel.secret.yaml {"encrypted":true}
+k8s/infrastructure/kube-prometheus-stack/resources/alertmanager-ntfy.secret.yaml {"encrypted":true}
+k8s/infrastructure/kube-prometheus-stack/resources/grafana-admin.secret.yaml {"encrypted":true}
+k8s/infrastructure/loki/resources/loki-s3.secret.yaml {"encrypted":true}

@@ -1,0 +1,145 @@
+terraform_data.talos_backup_keys_paired: Refreshing state... [id=30fc8431-e986-ca4b-faa0-10ccba48ac82]
+module.kubernetes.data.talos_image_factory_extensions_versions.cloud[0]: Reading...
+module.kubernetes.data.helm_template.talos_ccm[0]: Reading...
+module.kubernetes.talos_machine_secrets.this: Refreshing state... [id=machine_secrets]
+module.kubernetes.random_bytes.hcloud_csi_encryption_key[0]: Refreshing state...
+module.kubernetes.tls_private_key.ssh_key: Refreshing state... [id=97804c68fd6dfff9a48ea9b24b7a300523c69e5d]
+module.kubernetes.tls_private_key.state: Refreshing state... [id=66f5d1ec71c73c4629bae9a3284b3b53b081ce26]
+module.kubernetes.hcloud_placement_group.control_plane: Refreshing state... [id=1878628]
+module.kubernetes.data.hcloud_certificates.state: Reading...
+module.kubernetes.hcloud_network.this[0]: Refreshing state... [id=12657975]
+module.kubernetes.hcloud_placement_group.worker["ivp-w-pg-1"]: Refreshing state... [id=1878629]
+module.kubernetes.hcloud_ssh_key.this: Refreshing state... [id=130076671]
+module.kubernetes.tls_self_signed_cert.state: Refreshing state... [id=128907051663445809875158997874348109500]
+module.kubernetes.data.http.current_ipv4[0]: Reading...
+module.kubernetes.data.hcloud_location.this: Reading...
+module.kubernetes.data.http.current_ipv4[0]: Read complete after 1s [id=https://ipv4.icanhazip.com]
+module.kubernetes.data.helm_template.cilium: Reading...
+module.kubernetes.data.hcloud_certificates.state: Read complete after 1s [id=06ef76b6d235c70856fd73a3f759c731e10756e4]
+module.kubernetes.data.hcloud_location.this: Read complete after 0s [name=fsn1]
+module.kubernetes.data.helm_template.hcloud_csi[0]: Reading...
+module.kubernetes.data.helm_template.cert_manager[0]: Reading...
+module.kubernetes.hcloud_network_subnet.load_balancer: Refreshing state... [id=12657975-10.0.64.128/25]
+module.kubernetes.hcloud_network_subnet.control_plane: Refreshing state... [id=12657975-10.0.64.0/25]
+module.kubernetes.data.helm_template.metrics_server[0]: Reading...
+module.kubernetes.data.external.client_prerequisites_check[0]: Reading...
+module.kubernetes.hcloud_network_subnet.worker_shared: Refreshing state... [id=12657975-10.0.80.0/25]
+module.kubernetes.data.helm_template.hcloud_ccm: Reading...
+module.kubernetes.hcloud_network_subnet.autoscaler: Refreshing state... [id=12657975-10.0.95.128/25]
+module.kubernetes.data.external.client_prerequisites_check[0]: Read complete after 0s [id=-]
+module.kubernetes.data.external.talosctl_version_check[0]: Reading...
+module.kubernetes.hcloud_network_subnet.cluster_autoscaler_shared: Refreshing state... [id=12657975-10.0.80.128/25]
+module.kubernetes.terraform_data.hcloud_server_cluster_autoscaler: Refreshing state... [id=e2ada6a2-302a-cb10-1f5e-ed99414d8179]
+module.kubernetes.hcloud_firewall.this[0]: Refreshing state... [id=11631122]
+module.kubernetes.data.talos_image_factory_extensions_versions.cloud[0]: Read complete after 1s [id=extensions_info]
+module.kubernetes.talos_image_factory_schematic.cloud[0]: Refreshing state... [id=ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515]
+module.kubernetes.terraform_data.packer_init: Refreshing state... [id=bfc92cff-de7e-f03e-16bf-8f85ab7a74c7]
+module.kubernetes.data.talos_image_factory_urls.cloud_amd64[0]: Reading...
+module.kubernetes.data.hcloud_images.amd64[0]: Reading...
+module.kubernetes.data.talos_image_factory_urls.cloud_amd64[0]: Read complete after 0s
+module.kubernetes.data.hcloud_images.amd64[0]: Read complete after 0s [id=e52dba4d8eeefc5cbd08edc5bb0289ec157edf34]
+module.kubernetes.terraform_data.amd64_image[0]: Refreshing state... [id=cc22a4cf-f532-87be-43bc-b527e30981b6]
+module.kubernetes.data.hcloud_image.amd64[0]: Reading...
+module.kubernetes.data.hcloud_image.amd64[0]: Read complete after 0s
+module.kubernetes.hcloud_server.worker["ivp-w-1"]: Refreshing state... [id=166133825]
+module.kubernetes.hcloud_server.control_plane["ivp-cp-1"]: Refreshing state... [id=166133827]
+module.kubernetes.hcloud_server.worker["ivp-w-2"]: Refreshing state... [id=166133826]
+module.kubernetes.data.talos_client_configuration.this: Reading...
+module.kubernetes.data.talos_client_configuration.this: Read complete after 0s [id=ivp]
+module.kubernetes.data.talos_machine_configuration.worker["ivp-w-1"]: Reading...
+module.kubernetes.data.talos_machine_configuration.worker["ivp-w-2"]: Reading...
+module.kubernetes.data.talos_machine_configuration.worker["ivp-w-1"]: Read complete after 0s [id=ivp]
+module.kubernetes.data.talos_machine_configuration.worker["ivp-w-2"]: Read complete after 0s [id=ivp]
+module.kubernetes.terraform_data.talos_access_data: Refreshing state... [id=6d0e0d93-872e-b160-eef6-bf94a6db9cb7]
+module.kubernetes.data.external.talosctl_version_check[0]: Read complete after 1s [id=-]
+module.kubernetes.data.helm_template.talos_ccm[0]: Read complete after 2s [id=talos-cloud-controller-manager]
+aws_s3_bucket.this["cnpg"]: Refreshing state... [id=ivp-cnpg]
+aws_s3_bucket.this["etcd"]: Refreshing state... [id=ivp-etcd]
+aws_s3_bucket.this["tfstate"]: Refreshing state... [id=ivp-tfstate]
+aws_s3_bucket.this["loki"]: Refreshing state... [id=ivp-loki]
+module.kubernetes.data.helm_template.hcloud_csi[0]: Read complete after 2s [id=hcloud-csi]
+module.kubernetes.data.helm_template.cilium: Read complete after 2s [id=cilium]
+aws_s3_bucket_public_access_block.this["loki"]: Refreshing state... [id=ivp-loki]
+aws_s3_bucket_public_access_block.this["cnpg"]: Refreshing state... [id=ivp-cnpg]
+aws_s3_bucket_public_access_block.this["etcd"]: Refreshing state... [id=ivp-etcd]
+aws_s3_bucket_public_access_block.this["tfstate"]: Refreshing state... [id=ivp-tfstate]
+aws_s3_bucket_versioning.this["loki"]: Refreshing state... [id=ivp-loki]
+aws_s3_bucket_versioning.this["cnpg"]: Refreshing state... [id=ivp-cnpg]
+aws_s3_bucket_versioning.this["tfstate"]: Refreshing state... [id=ivp-tfstate]
+aws_s3_bucket_versioning.this["etcd"]: Refreshing state... [id=ivp-etcd]
+module.kubernetes.data.helm_template.cert_manager[0]: Read complete after 2s [id=cert-manager]
+module.kubernetes.data.helm_template.metrics_server[0]: Read complete after 2s [id=metrics-server]
+module.kubernetes.data.helm_template.hcloud_ccm: Read complete after 2s [id=hcloud-cloud-controller-manager]
+module.kubernetes.data.talos_machine_configuration.control_plane["ivp-cp-1"]: Reading...
+module.kubernetes.data.talos_machine_configuration.control_plane["ivp-cp-1"]: Read complete after 0s [id=ivp]
+module.kubernetes.data.external.talos_member[0]: Reading...
+module.kubernetes.data.external.talos_member[0]: Read complete after 1s [id=-]
+module.kubernetes.terraform_data.upgrade_control_plane: Refreshing state... [id=f7f19bb1-1e29-2ab3-b6e6-cf51da81ab32]
+module.kubernetes.terraform_data.upgrade_worker: Refreshing state... [id=3858427a-7ea8-6c9c-e814-9a17982c4d96]
+module.kubernetes.terraform_data.upgrade_bare_metal: Refreshing state... [id=7a988f89-f349-9890-4adc-dfa904c7c7fc]
+module.kubernetes.terraform_data.upgrade_cluster_autoscaler[0]: Refreshing state... [id=6da61ef0-3c9e-afa9-bfaa-eaf008eb7288]
+module.kubernetes.terraform_data.upgrade_kubernetes: Refreshing state... [id=f54eefb8-16cd-3a86-b876-9675663a847b]
+module.kubernetes.talos_machine_configuration_apply.control_plane["ivp-cp-1"]: Refreshing state... [id=machine_configuration_apply]
+module.kubernetes.terraform_data.create_talosconfig[0]: Refreshing state... [id=8f4c85e1-7db7-7468-82ad-01d35abd8aa4]
+module.kubernetes.talos_cluster_kubeconfig.this: Refreshing state... [id=ivp]
+module.kubernetes.talos_machine_configuration_apply.worker["ivp-w-2"]: Refreshing state... [id=machine_configuration_apply]
+module.kubernetes.talos_machine_configuration_apply.worker["ivp-w-1"]: Refreshing state... [id=machine_configuration_apply]
+module.kubernetes.terraform_data.create_kubeconfig[0]: Refreshing state... [id=3a4db1af-cc43-7a8f-cea8-269ecad5befd]
+module.kubernetes.terraform_data.talos_machine_configuration_apply_cluster_autoscaler[0]: Refreshing state... [id=53db88cc-c226-aa2d-8fe5-7c07a0ad127e]
+module.kubernetes.talos_machine_bootstrap.this: Refreshing state... [id=machine_bootstrap]
+module.kubernetes.terraform_data.synchronize_manifests: Refreshing state... [id=950f3806-3a86-ce38-e8dd-1fb61b7e6b55]
+module.kubernetes.hcloud_uploaded_certificate.state: Refreshing state... [id=1682572]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+-/+ destroy and then create replacement
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # module.kubernetes.data.http.kube_api_health[0] will be read during apply
+  # (depends on a resource or a module with changes pending)
+ <= data "http" "kube_api_health" {
+      + body                 = (known after apply)
+      + id                   = (known after apply)
+      + insecure             = true
+      + response_body        = (known after apply)
+      + response_body_base64 = (known after apply)
+      + response_headers     = (known after apply)
+      + status_code          = (known after apply)
+      + url                  = "https://49.12.219.217:6443/version"
+
+      + retry {
+          + attempts     = 60
+          + max_delay_ms = 5000
+          + min_delay_ms = 5000
+        }
+    }
+
+  # module.kubernetes.talos_machine_configuration_apply.control_plane["ivp-cp-1"] will be updated in-place
+  ~ resource "talos_machine_configuration_apply" "control_plane" {
+        id                             = "machine_configuration_apply"
+      ~ machine_configuration          = (sensitive value)
+      ~ machine_configuration_hash     = "22aee6fec4bac53483c0e942c48d01bdf4802e3437a539a2010d3a6be777d4ae" -> "e04168e754b97a138afad96547245b5b2aaf874ff3bac02c8fe50f3c259760c0"
+      ~ machine_configuration_input    = (sensitive value)
+        # (7 unchanged attributes hidden)
+    }
+
+  # module.kubernetes.terraform_data.synchronize_manifests must be replaced
+-/+ resource "terraform_data" "synchronize_manifests" {
+      ~ id               = "950f3806-3a86-ce38-e8dd-1fb61b7e6b55" -> (known after apply)
+      ~ triggers_replace = [
+          ~ "9ce5f00c455f8c9a105eb2618000e823b3d8a6b9" -> "bbacd019587736203f50436233ffb39a043712e9",
+            "6451d157438a641e3068fa6ac508583d32ebb278",
+        ]
+    }
+
+Plan: 1 to add, 1 to change, 1 to destroy.
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+Saved the plan to: tfplan-hubble
+
+To perform exactly these actions, run the following command to apply:
+    terraform apply "tfplan-hubble"

@@ -53,17 +53,21 @@ export function buildHeadScript(): string {
   const skins = JSON.stringify(SKIN_IDS);
   // Plain ES5-ish, no template literals, so the minifier cannot change it
   // between hash computation and rendering (we do not minify it at all).
+  // Attributes are painted first; persistence is best-effort. A single outer
+  // try/catch around localStorage.setItem used to skip setAttribute entirely
+  // when storage threw (Safari private mode), leaving --canvas/--fg unset.
   return (
-    '(function(){try{' +
+    '(function(){' +
     `var d=document.documentElement,s=${skins},k='${STORAGE_KEYS.skin}',t='${STORAGE_KEYS.theme}';` +
-    'var skin=localStorage.getItem(k);' +
-    'if(s.indexOf(skin)<0){var b=new Uint8Array(1),l=256-(256%s.length);do{crypto.getRandomValues(b)}while(b[0]>=l);skin=s[b[0]%s.length];localStorage.setItem(k,skin)}' +
+    'var skin=null;try{skin=localStorage.getItem(k)}catch(e){}' +
+    'if(s.indexOf(skin)<0){skin=s[0];try{var b=new Uint8Array(1),l=256-(256%s.length);do{crypto.getRandomValues(b)}while(b[0]>=l);skin=s[b[0]%s.length]}catch(e){}try{localStorage.setItem(k,skin)}catch(e){}}' +
     'd.setAttribute("data-skin",skin);' +
-    'var p=localStorage.getItem(t);if(p!=="light"&&p!=="dark")p="system";' +
+    'var p="system";try{var stored=localStorage.getItem(t);if(stored==="light"||stored==="dark")p=stored}catch(e){}' +
     'var m=matchMedia("(prefers-color-scheme: dark)");' +
     'var apply=function(){d.setAttribute("data-theme",p==="system"?(m.matches?"dark":"light"):p);d.setAttribute("data-theme-pref",p)};' +
-    'apply();m.addEventListener("change",function(){if(p==="system")apply()});' +
-    'addEventListener("storage",function(e){if(e.key===t){p=(e.newValue==="light"||e.newValue==="dark")?e.newValue:"system";apply()}else if(e.key===k&&s.indexOf(e.newValue)>=0){d.setAttribute("data-skin",e.newValue)}});' +
-    '}catch(e){}})();'
+    'apply();' +
+    'try{m.addEventListener("change",function(){if(p==="system")apply()});' +
+    'addEventListener("storage",function(e){if(e.key===t){p=(e.newValue==="light"||e.newValue==="dark")?e.newValue:"system";apply()}else if(e.key===k&&s.indexOf(e.newValue)>=0){d.setAttribute("data-skin",e.newValue)}})}catch(e){}' +
+    '})();'
   );
 }

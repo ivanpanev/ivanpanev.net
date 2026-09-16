@@ -1,0 +1,85 @@
+# Chart: grafana/k8s-monitoring 4.5.2
+# Logs and cluster events only. Prometheus Operator owns metrics (ADR-0007).
+
+cluster:
+  name: hetzner
+
+destinations:
+  loki:
+    type: loki
+    url: http://loki.loki.svc.cluster.local:3100/loki/api/v1/push
+
+podLogsViaLoki:
+  enabled: true
+  destinations: [loki]
+  collector: alloy-logs
+
+clusterEvents:
+  enabled: true
+  destinations: [loki]
+  collector: alloy-events
+
+clusterMetrics:
+  enabled: false
+costMetrics:
+  enabled: false
+hostMetrics:
+  enabled: false
+annotationAutodiscovery:
+  enabled: false
+prometheusOperatorObjects:
+  enabled: false
+autoInstrumentation:
+  enabled: false
+profiling:
+  enabled: false
+podLogsViaOpenTelemetry:
+  enabled: false
+applicationObservability:
+  enabled: false
+
+collectors:
+  alloy-logs:
+    presets: [filesystem-log-reader, daemonset]
+    alloy:
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+  alloy-events:
+    presets: [singleton]
+    alloy:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+telemetryServices:
+  kube-state-metrics:
+    deploy: false
+  node-exporter:
+    deploy: false
+  windows-exporter:
+    deploy: false
+  opencost:
+    deploy: false
+  kepler:
+    deploy: false
+  beyla:
+    deploy: false
+
+alloy-operator:
+  deploy: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi

@@ -21,6 +21,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   add('pgp', { title: 'PGP', subtitle: 'OpenPGP key for encrypted mail and verifying what I publish.', kicker: SITE.title });
   add('verify', { title: 'Verify a signature', subtitle: 'In-browser OpenPGP verification against the site key.', kicker: SITE.title });
   add('about', { title: 'About', subtitle: SITE.description, kicker: SITE.title });
+  add('notes', { title: 'Notes', subtitle: 'Passcode-protected encrypted notebook. Ciphertext only on the server.', kicker: SITE.title });
   add('404', { title: 'Not found', kicker: SITE.title });
 
   for (const t of TOOLS) add(`tools/${t.id}`, { title: t.name, subtitle: t.description, kicker: 'Tools' });

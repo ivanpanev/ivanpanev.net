@@ -75,7 +75,7 @@ export default defineConfig({
         "default-src 'none'",
         "img-src 'self' data: blob:",
         "font-src 'self'",
-        "connect-src 'self'",
+        "connect-src 'self' https://notes-api.ivanpanev.net",
         "media-src 'self'",
         "worker-src 'self' blob:",
         "manifest-src 'self'",

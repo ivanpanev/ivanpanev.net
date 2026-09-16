@@ -1,0 +1,69 @@
+name: k8s-validate
+
+# Render every Application and kubeconform the result. Encrypted SOPS files
+# are skipped here; hygiene.yml asserts they are encrypted. Chart versions
+# are the same pins as k8s/clusters/hetzner/applications (ADR-0012).
+
+on:
+  pull_request:
+    paths:
+      - "k8s/**"
+      - "k8s/bootstrap/**"
+      - "scripts/k8s-validate.sh"
+      - "scripts/versions.env"
+      - ".github/workflows/k8s-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "k8s/**"
+      - "scripts/k8s-validate.sh"
+      - "scripts/versions.env"
+      - ".github/workflows/k8s-validate.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: k8s-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: kustomize helm kubeconform
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pinned helm kustomize kubeconform
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC1091
+          source scripts/versions.env
+          mkdir -p "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+          helm_base="https://get.helm.sh"
+          curl -fsSL -o helm.tgz "$helm_base/helm-v${PIN_HELM}-linux-amd64.tar.gz"
+          echo "86584a54def73570558f66f5111cc53dfed56689637ae32c1201205d494f54fb  helm.tgz" | sha256sum -c -
+          tar -xzf helm.tgz linux-amd64/helm
+          install -m 0755 linux-amd64/helm "$HOME/.local/bin/helm"
+
+          kustomize_base="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${PIN_KUSTOMIZE}"
+          curl -fsSL -o kustomize.tgz "$kustomize_base/kustomize_v${PIN_KUSTOMIZE}_linux_amd64.tar.gz"
+          echo "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d  kustomize.tgz" | sha256sum -c -
+          tar -xzf kustomize.tgz
+          install -m 0755 kustomize "$HOME/.local/bin/kustomize"
+
+          kc_base="https://github.com/yannh/kubeconform/releases/download/v${PIN_KUBECONFORM}"
+          curl -fsSL -o kubeconform.tgz "$kc_base/kubeconform-linux-amd64.tar.gz"
+          echo "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883  kubeconform.tgz" | sha256sum -c -
+          tar -xzf kubeconform.tgz kubeconform
+          install -m 0755 kubeconform "$HOME/.local/bin/kubeconform"
+
+          helm version
+          kustomize version
+          kubeconform -v
+
+      - name: Render and validate
+        run: bash scripts/k8s-validate.sh

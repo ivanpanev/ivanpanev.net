@@ -1,0 +1,18 @@
+# After the ivp-tfstate bucket exists, copy to backend.hcl (gitignored) and
+# run: terraform init -migrate-state -backend-config=backend.hcl
+#
+# Hetzner Object Storage does not implement every S3 locking feature.
+# Try use_lockfile = true first; if init rejects it, drop that line and
+# treat this as a single-operator state (documented in the runbook).
+
+bucket       = "ivp-tfstate"
+key          = "hetzner/terraform.tfstate"
+region       = "fsn1"
+endpoints    = { s3 = "https://fsn1.your-objectstorage.com" }
+use_lockfile = true
+
+skip_credentials_validation = true
+skip_requesting_account_id  = true
+skip_metadata_api_check     = true
+skip_region_validation      = true
+use_path_style              = true

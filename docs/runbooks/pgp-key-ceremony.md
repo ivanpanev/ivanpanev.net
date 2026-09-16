@@ -113,6 +113,22 @@ Trust your own key: `gpg --edit-key "$FPR" trust` → `5` (ultimate).
 
    The build prints the WKD path; it must equal
    `/.well-known/openpgpkey/hu/$(gpg --with-wkd-hash -k "$IVP_EMAIL" | awk '/@ivanpanev.net/ && !/uid/ {print $1}' | cut -d@ -f1)`.
+   After this file is committed, a missing `publickey.asc` fails the build
+   (`IVP_REQUIRE_WKD=1` forces that even before the commit).
+   `/.well-known/security.txt` already lists
+   `Encryption: https://ivanpanev.net/pgp/ivan.asc`.
+
+   Sign `security.txt` with the same signing subkey and commit the detached
+   signature next to it (RFC 9116):
+
+   ```bash
+   gpg --detach-sign --armor -o apps/web/public/.well-known/security.txt.asc \
+     apps/web/public/.well-known/security.txt
+   ```
+
+   After `publickey.asc` is committed, `pnpm lint:html` (`check-dist.mjs`)
+   requires `/.well-known/security.txt.asc` in `dist`. Re-sign when
+   `Expires` or Contact changes.
 
 2. After deploy, verify WKD from a machine that has never seen the key:
 

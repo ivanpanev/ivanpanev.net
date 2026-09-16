@@ -1,0 +1,92 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: public
+  hostnames:
+    - grafana.ivanpanev.net
+  rules:
+    - backendRefs:
+        - name: kube-prometheus-stack-grafana
+          namespace: monitoring
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argocd
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: public
+  hostnames:
+    - argocd.ivanpanev.net
+  rules:
+    - backendRefs:
+        - name: argocd-server
+          namespace: argocd
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: public
+  hostnames:
+    - hubble.ivanpanev.net
+  rules:
+    - backendRefs:
+        - name: hubble-ui
+          namespace: kube-system
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: notes-api
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: public
+  hostnames:
+    - notes-api.ivanpanev.net
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1
+        - path:
+            type: Exact
+            value: /healthz
+        - path:
+            type: Exact
+            value: /readyz
+        - path:
+            type: Exact
+            value: /openapi.yaml
+      backendRefs:
+        - name: notebook-api
+          namespace: notebook
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: auth
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: public
+  hostnames:
+    - auth.ivanpanev.net
+  rules:
+    - backendRefs:
+        - name: authentik-server
+          namespace: authentik
+          port: 80

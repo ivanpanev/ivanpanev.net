@@ -1,0 +1,186 @@
+==> kube-prometheus-stack
+Release "kube-prometheus-stack" does not exist. Installing it now.
+NAME: kube-prometheus-stack
+LAST DEPLOYED: Wed Sep 16 11:58:58 2026
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace monitoring get pods -l "release=kube-prometheus-stack"
+
+Get Grafana 'admin' user password by running:
+
+  kubectl --namespace monitoring get secrets kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+
+Access Grafana local instance:
+
+  export POD_NAME=$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=kube-prometheus-stack" -oname)
+  kubectl --namespace monitoring port-forward $POD_NAME 3000
+
+Get your grafana admin user password by running:
+
+  kubectl get secret --namespace monitoring -l app.kubernetes.io/component=admin-secret -o jsonpath="{.items[0].data.admin-password}" | base64 --decode ; echo
+
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+referencegrant.gateway.networking.k8s.io/from-gateway created
+servicemonitor.monitoring.coreos.com/cloudflared created
+==> loki
+namespace/loki created
+secret/loki-s3 created
+Release "loki" does not exist. Installing it now.
+NAME: loki
+LAST DEPLOYED: Wed Sep 16 12:00:10 2026
+NAMESPACE: loki
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+***********************************************************************
+ Welcome to Grafana Loki
+ Chart version: 18.11.7
+ Chart Name: loki
+ Loki version: 3.7.7
+***********************************************************************
+
+** Please be patient while the chart is being deployed **
+
+Tip:
+
+  Watch the deployment status using the command: kubectl get pods -w --namespace loki
+
+If pods are taking too long to schedule make sure pod affinity can be fulfilled in the current cluster.
+
+***********************************************************************
+Installed components:
+***********************************************************************
+* loki
+
+Loki has been deployed as a single binary.
+This means a single pod is handling reads and writes. You can scale that pod vertically by adding more CPU and memory resources.
+
+
+***********************************************************************
+Sending logs to Loki
+***********************************************************************
+
+You can send logs from inside the cluster using the cluster DNS:
+
+http://loki.loki.svc.cluster.local:3100/loki/api/v1/push
+
+You can test to send data from outside the cluster by port-forwarding the gateway to your local machine:
+
+  kubectl port-forward --namespace loki svc/loki 3100:3100 &
+
+And then using http://127.0.0.1:3100/loki/api/v1/push URL as shown below:
+
+```
+curl -H "Content-Type: application/json" -XPOST -s "http://127.0.0.1:3100/loki/api/v1/push"  \
+--data-raw "{\"streams\": [{\"stream\": {\"job\": \"test\"}, \"values\": [[\"$(date +%s)000000000\", \"fizzbuzz\"]]}]}"
+```
+
+Then verify that Loki did receive the data using the following command:
+
+```
+curl "http://127.0.0.1:3100/loki/api/v1/query_range" --data-urlencode 'query={job="test"}' | jq .data.result
+```
+
+***********************************************************************
+Connecting Grafana to Loki
+***********************************************************************
+
+If Grafana operates within the cluster, you'll set up a new Loki datasource by utilizing the following URL:
+
+http://loki.loki.svc.cluster.local:3100/
+==> k8s-monitoring
+Release "k8s-monitoring" does not exist. Installing it now.
+NAME: k8s-monitoring
+LAST DEPLOYED: Wed Sep 16 12:01:20 2026
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Grafana k8s-monitoring Helm chart deployed!
+
+This chart will install the following components:
+* Grafana Alloy Operator
+* Grafana Alloy "alloy-events" (deployment, 1 replica)
+* Grafana Alloy "alloy-logs" (daemonset)
+
+It will:
+* Gather Kubernetes Cluster events and send data to loki.
+* Gather logs from Kubernetes Pods in Loki format and send data to loki.
+==> status
+NAMESPACE      NAME                                                        READY   STATUS    RESTARTS       AGE
+argocd         argocd-application-controller-0                             1/1     Running   0              25m
+argocd         argocd-applicationset-controller-54d5cc77b5-tfd5n           1/1     Running   0              25m
+argocd         argocd-redis-6684886f5f-9hbwc                               1/1     Running   0              25m
+argocd         argocd-repo-server-5f5cb9945-fqlxg                          1/1     Running   0              9m13s
+argocd         argocd-server-58d5ddfd97-hbztm                              1/1     Running   0              25m
+cert-manager   cert-manager-6dcb8b5887-69z7m                               1/1     Running   0              142m
+cert-manager   cert-manager-cainjector-df47ccc8b-t2gnr                     1/1     Running   0              142m
+cert-manager   cert-manager-webhook-7f8cd8f64f-gqrqk                       1/1     Running   0              142m
+cloudflared    cloudflared-6b8cfc5dc-l8j2t                                 1/1     Running   0              6m24s
+cloudflared    cloudflared-6b8cfc5dc-m8tdg                                 1/1     Running   0              6m24s
+cnpg-system    cnpg-cloudnative-pg-65cb78c697-vt5wd                        1/1     Running   0              4m
+cnpg-system    plugin-barman-cloud-ff8dc5fc7-jz5k4                         1/1     Running   0              3m49s
+kube-system    cilium-bbrjn                                                1/1     Running   0              26m
+kube-system    cilium-envoy-2vww9                                          1/1     Running   0              141m
+kube-system    cilium-envoy-9hpnf                                          1/1     Running   0              142m
+kube-system    cilium-envoy-t8j7m                                          1/1     Running   0              142m
+kube-system    cilium-k5xhj                                                1/1     Running   0              26m
+kube-system    cilium-operator-7b778b46f5-wgjkl                            1/1     Running   0              26m
+kube-system    cilium-xr9zw                                                1/1     Running   0              26m
+kube-system    coredns-6fc4bb75bf-dtpjx                                    1/1     Running   0              143m
+kube-system    coredns-6fc4bb75bf-nzvdq                                    1/1     Running   0              143m
+kube-system    hcloud-cloud-controller-manager-vb5jq                       1/1     Running   0              142m
+kube-system    hcloud-csi-controller-f9d78dd9-dxc28                        5/5     Running   0              142m
+kube-system    hcloud-csi-node-8kvxm                                       3/3     Running   0              142m
+kube-system    hcloud-csi-node-ck8hm                                       3/3     Running   0              142m
+kube-system    hcloud-csi-node-wfl66                                       3/3     Running   0              141m
+kube-system    hubble-relay-5d7fbbddc-9sdh5                                1/1     Running   1 (26m ago)    28m
+kube-system    hubble-ui-5478cfb8d-tjl9k                                   2/2     Running   0              28m
+kube-system    kube-apiserver-ivp-cp-1                                     1/1     Running   0              143m
+kube-system    kube-controller-manager-ivp-cp-1                            1/1     Running   2 (143m ago)   143m
+kube-system    kube-scheduler-ivp-cp-1                                     1/1     Running   2 (143m ago)   143m
+kube-system    metrics-server-75496bcb78-hjnqs                             1/1     Running   0              142m
+kube-system    metrics-server-75496bcb78-jr28d                             1/1     Running   0              142m
+kube-system    talos-cloud-controller-manager-vgdhp                        1/1     Running   0              142m
+loki           loki-0                                                      2/2     Running   0              104s
+monitoring     alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0              2m36s
+monitoring     k8s-monitoring-alloy-events-55767cf67-zjsqb                 2/2     Running   0              24s
+monitoring     k8s-monitoring-alloy-logs-q5rj4                             1/2     Running   0              24s
+monitoring     k8s-monitoring-alloy-logs-r9qcm                             2/2     Running   0              24s
+monitoring     k8s-monitoring-alloy-logs-xvmhf                             2/2     Running   0              24s
+monitoring     k8s-monitoring-alloy-operator-7bd7b7cf88-8khdk              1/1     Running   0              33s
+monitoring     kube-prometheus-stack-grafana-65b6cf8d6b-ndvk2              3/3     Running   0              2m40s
+monitoring     kube-prometheus-stack-kube-state-metrics-64b5d4d7c5-wtqkj   1/1     Running   0              2m40s
+monitoring     kube-prometheus-stack-operator-5bbb8cf6f6-hdj64             1/1     Running   0              2m40s
+monitoring     kube-prometheus-stack-prometheus-node-exporter-5svhg        1/1     Running   0              2m40s
+monitoring     kube-prometheus-stack-prometheus-node-exporter-64dzb        1/1     Running   0              2m40s
+monitoring     kube-prometheus-stack-prometheus-node-exporter-mxwpz        1/1     Running   0              2m40s
+monitoring     prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0              2m35s
+NAME                                       CLASS              ADDRESS     PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/public   cilium-clusterip   10.0.64.1   True         4m37s
+
+NAME                                          HOSTNAMES                   AGE
+httproute.gateway.networking.k8s.io/argocd    ["argocd.ivanpanev.net"]    8m56s
+httproute.gateway.networking.k8s.io/grafana   ["grafana.ivanpanev.net"]   8m56s
+httproute.gateway.networking.k8s.io/hubble    ["hubble.ivanpanev.net"]    8m55s
+
+NAME                            TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/cilium-gateway-public   NodePort   10.0.107.114   <none>        80:30337/TCP   4m37s
+NAME                     READY   AGE
+letsencrypt-cloudflare   True    4m9s
+NAMESPACE      NAME                     READY   SECRET                       AGE
+cert-manager   wildcard-ivanpanev-net   False   wildcard-ivanpanev-net-tls   4m8s
+cnpg-system    barman-cloud-client      True    barman-cloud-client-tls      3m51s
+cnpg-system    barman-cloud-server      True    barman-cloud-server-tls      3m51s
+NAMESPACE      NAME                                             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                        AGE
+bootstrap_ok

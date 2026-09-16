@@ -21,3 +21,4 @@ status (Accepted, Superseded by ADR-XXXX, Deprecated). Use
 | [0013](0013-x86-only-until-homelab-known.md) | x86-64 nodes and images only until homelab hardware is known | Accepted |
 | [0014](0014-oidc-everywhere-no-custom-auth.md) | No home-grown authentication; Cloudflare Access now, OIDC IdP later | Accepted |
 | [0015](0015-gauntlet-review-process.md) | Milestone gating by an independent critic review | Accepted |
+| [0016](0016-authentik-oidc.md) | Authentik as the self-hosted OIDC identity provider | Accepted |

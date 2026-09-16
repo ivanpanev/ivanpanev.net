@@ -1,0 +1,1 @@
+﻿chart=kube-prometheus-stack version=91.4.1 values=k8s/infrastructure/kube-prometheus-stack/values.yaml lines=83207 exit=0

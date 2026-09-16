@@ -33,6 +33,24 @@ for (const required of ['/_headers', '/_redirects', '/404.html', '/sitemap-index
   if (!fileSet.has(required)) problems.push(`missing ${required}`);
 }
 
+const redirects = await fs.readFile(path.join(dist, '_redirects'), 'utf8');
+if (!/^https:\/\/www\.ivanpanev\.net\/\* https:\/\/ivanpanev\.net\/:splat 301\s*$/m.test(redirects)) {
+  problems.push('_redirects: missing www -> apex 301');
+}
+
+const securityTxt = await fs.readFile(path.join(dist, '.well-known', 'security.txt'), 'utf8');
+if (!/^Encryption: https:\/\/ivanpanev\.net\/pgp\/ivan\.asc\s*$/m.test(securityTxt)) {
+  problems.push('security.txt: Encryption must point at the armoured key, not /pgp');
+}
+try {
+  await fs.access(path.join(process.cwd(), 'src', 'pgp', 'publickey.asc'));
+  if (!fileSet.has('/.well-known/security.txt.asc')) {
+    problems.push('missing /.well-known/security.txt.asc (detached signature required after the key ceremony)');
+  }
+} catch {
+  // Ceremony not done; unsigned security.txt is expected.
+}
+
 /** Resolve an internal href the way Workers Static Assets (drop-trailing-slash + .html) will. */
 function resolves(href) {
   const p = href.split('#')[0].split('?')[0];
@@ -54,6 +72,7 @@ for (const f of html) {
   else {
     if (!/script-src 'self' 'wasm-unsafe-eval'( 'sha256-[A-Za-z0-9+/=]+')+(;|$)/.test(csp)) warn(f, `script-src is not hash-only: ${csp.match(/script-src[^;]*/)?.[0]}`);
     if (!/default-src 'none'/.test(csp)) warn(f, "CSP lacks default-src 'none'");
+    if (!/connect-src 'self' https:\/\/notes-api\.ivanpanev\.net/.test(csp)) warn(f, 'connect-src must allow notes-api');
   }
 
   for (const m of src.matchAll(/<(script|link|img|iframe|source|video|audio)\b([^>]*?)\s(?:src|href)="([^"]+)"/g)) {

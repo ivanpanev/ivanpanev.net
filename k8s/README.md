@@ -24,3 +24,7 @@ Conventions:
   is referenced as `default`, the S3 endpoint and bucket names come from
   cluster values.
 - `kustomize build` and `kubeconform` run in CI on every change.
+- `k8s/apps/notebook-restore` is a **manual** restore-drill overlay. It is not
+  an Argo CD Application. Never add it to `clusters/hetzner`.
+- `k8s/apps/authentik` is the Phase 2 OIDC IdP (ADR-0016): `resources/` is
+  CNPG + NetworkPolicy, `values.yaml` is the Helm chart.

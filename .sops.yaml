@@ -23,17 +23,19 @@
 # Full procedure and drill: docs/runbooks/secrets.md
 
 keys:
-  - &operator age1PLACEHOLDER_REPLACE_WITH_OUTPUT_OF_scripts_sops-init
-  # - &argocd_hetzner age1...   # added in Milestone 3 (k8s/bootstrap/argocd)
+  - &operator age1nj2j4yjxq2ckjp2qqperd3mxnkmfak62vnyselafdrumzknzq4vqrsqkt0
+  - &argocd_hetzner age1fkgauddyappmru0m4nvwgv3fc7l3ekj83q3yh86kakm83y9pjf6qszpq9k
 
 creation_rules:
   # Kubernetes secrets: only the data/stringData fields are encrypted so
   # manifests stay diffable.
-  - path_regex: ^k8s/.*\.(enc|secret)\.ya?ml$
+  # Unanchored so Windows (C:\...\k8s\...) and Unix (k8s/...) both match.
+  - path_regex: k8s[/\\].*\.(enc|secret)\.ya?ml$
     encrypted_regex: ^(data|stringData)$
     key_groups:
       - age:
           - *operator
+          - *argocd_hetzner
 
   # Terraform variable files that carry credentials.
   - path_regex: ^infra/terraform/.*\.enc\.tfvars(\.json)?$

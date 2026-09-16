@@ -1,0 +1,17 @@
+# Wildcard for in-cluster TLS later (Gateway stays HTTP; TLS terminates at
+# Cloudflare per ADR-0005). Issuing now proves DNS-01 and keeps the secret
+# ready.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-ivanpanev-net
+  namespace: cert-manager
+spec:
+  secretName: wildcard-ivanpanev-net-tls
+  issuerRef:
+    name: letsencrypt-cloudflare
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - ivanpanev.net
+    - "*.ivanpanev.net"

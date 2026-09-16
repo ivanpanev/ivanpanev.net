@@ -1,0 +1,11 @@
+.gitignore:35:**/*.tfvars	infra/terraform/hetzner/terraform.tfvars
+.gitignore:39:!**/*.enc.tfvars	infra/terraform/hetzner/terraform.enc.tfvars
+.gitignore:37:!**/*.example.tfvars	infra/terraform/hetzner/terraform.example.tfvars
+.gitignore:31:**/terraform.tfstate	infra/terraform/hetzner/terraform.tfstate
+.gitignore:29:**/.terraform/	infra/terraform/hetzner/.terraform/terraform.tfstate
+.gitignore:47:**/kubeconfig	infra/terraform/hetzner/kubeconfig
+.gitignore:49:**/talosconfig	infra/terraform/hetzner/talosconfig
+.gitignore:44:**/backend.hcl	infra/terraform/hetzner/backend.hcl
+not-ignored (empty check-ignore): infra/terraform/hetzner/.terraform.lock.hcl
+not-ignored (empty check-ignore): infra/terraform/cloudflare/.terraform.lock.hcl
+not-ignored (empty check-ignore): k8s/infrastructure/cloudflared/tunnel.enc.yaml

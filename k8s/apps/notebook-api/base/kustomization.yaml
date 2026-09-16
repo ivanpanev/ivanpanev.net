@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - objectstore.yaml
+  - cluster.yaml
+  - scheduledbackup.yaml
+  - deployment.yaml
+  - networkpolicy.yaml
+  - servicemonitor.yaml
+  - referencegrant.yaml
+generators:
+  - ksops-generator.yaml

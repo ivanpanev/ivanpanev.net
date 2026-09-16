@@ -12,8 +12,9 @@
 | Milestone | Rounds | Final overall | Status |
 | --- | --- | --- | --- |
 | M0 scaffold and decisions | r1: 6 FAIL ([m0-r1.md](m0-r1.md)), r2: 7 FAIL ([m0-r2.md](m0-r2.md)), r3: **8 PASS** ([m0-r3.md](m0-r3.md)) | 2026-09-16 | passed |
-| M1 site | - | - | pending |
-| M2 Terraform | - | - | pending |
-| M3 platform | - | - | pending |
-| M4 notebook | - | - | pending |
-| M5 hardening | - | - | pending |
+| M1 site | r1: 8 FAIL ([m1-r1.md](m1-r1.md)), r2: **8 PASS** ([m1-r2.md](m1-r2.md)) | 2026-09-16 | passed |
+| M2 Terraform | r1: 7 FAIL ([m2-r1.md](m2-r1.md)), r2: **8 PASS** ([m2-r2.md](m2-r2.md)) | 2026-09-16 | passed |
+| M3 platform | r1: 7 FAIL ([m3-r1.md](m3-r1.md)), r2: 7 FAIL ([m3-r2.md](m3-r2.md)), r3: **8 PASS** ([m3-r3.md](m3-r3.md)) | 2026-09-16 | passed |
+| M4 notebook | r1: 7 FAIL ([m4-r1.md](m4-r1.md)), r2: **8 PASS** ([m4-r2.md](m4-r2.md)) | 2026-09-16 | passed |
+| M5 hardening | r1: 7 FAIL ([m5-r1.md](m5-r1.md)), r2: 7 FAIL ([m5-r2.md](m5-r2.md)), r3: **8 PASS** ([m5-r3.md](m5-r3.md)) | 2026-09-16 | passed |
+| M6 Authentik OIDC | r1: 7 FAIL ([m6-r1.md](m6-r1.md)), r2: **8 PASS** ([m6-r2.md](m6-r2.md)) | 2026-09-16 | passed |

@@ -65,3 +65,5 @@ network path, see ADR-0005):
   table describing how the Access identity is consumed and verified at origin.
 - 2026-09-16 (M0-R2-F06): Argo CD CLI path wording aligned with ADR-0006
   (`--core` uses the kubeconfig directly; no port-forward involved).
+- 2026-09-16 (M6): OD-3 closed as Authentik (ADR-0016). Grafana/Argo remain
+  on Access JWT / local-admin until a later federation milestone.

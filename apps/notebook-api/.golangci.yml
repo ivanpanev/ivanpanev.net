@@ -1,0 +1,13 @@
+version: "2"
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - gosec
+    - bodyclose
+    - noctx
+    - durationcheck
+run:
+  timeout: 5m

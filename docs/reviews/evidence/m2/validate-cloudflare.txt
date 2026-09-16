@@ -1,0 +1,5 @@
+command: terraform validate -no-color
+cwd: c:\Users\doubl\Mysite\infra\terraform\cloudflare
+Success! The configuration is valid.
+
+exit=0

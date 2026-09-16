@@ -4,10 +4,11 @@
 
 - Encrypted files are committed; plaintext never is. `.sops.yaml` at the
   repository root decides which files must be encrypted and for whom.
-- Recipients are age public keys: the operator's workstation key and, from
-  Milestone 3, one key per Kubernetes cluster (held by Argo CD's repo-server
-  as a Secret). Adding a cluster means adding a recipient; no re-encryption
-  ceremony tied to cluster hardware.
+- Recipients are age public keys: the operator's workstation key and one key
+  per Kubernetes cluster (held by Argo CD's repo-server as Secret `sops-age`
+  in `argocd`). Adding a cluster means adding a recipient; no re-encryption
+  ceremony tied to cluster hardware. Bootstrap:
+  [argocd-bootstrap.md](argocd-bootstrap.md).
 - File naming convention decides the rule: `*.enc.yaml`, `*.secret.yaml`
   (Kubernetes, only `data`/`stringData` encrypted), `*.enc.tfvars`,
   `*.enc.env`, and any other `*.enc.<ext>` (fully encrypted).
@@ -143,6 +144,11 @@ done
 
 `scripts/sops-files.sh` lists tracked files matching any creation rule; it is
 the single definition used by the runbook and CI so the two cannot disagree.
+
+After rotating `k8s/apps/authentik/resources/authentik-config.secret.yaml`,
+bump `ivp.net/config-epoch` in `k8s/apps/authentik/values.yaml` or
+`kubectl -n authentik rollout restart deploy/authentik-server deploy/authentik-worker`.
+The Helm chart checksum does not see that Secret.
 
 ## Rollback
 

@@ -35,7 +35,7 @@ that depends on it.
 | --- | --- | --- | --- |
 | OD-1 | Licensing: code (MIT?) and content (CC BY 4.0?) | Before the site is public (end of M1) | All rights reserved |
 | OD-2 | Alert delivery channel (ntfy vs Telegram vs email via a transactional SMTP provider) | M3 observability | ntfy topic behind Access |
-| OD-3 | Identity provider for friends and family (Authentik vs Pocket ID) | Phase 2 | Authentik |
+| OD-3 | Identity provider for friends and family (Authentik vs Pocket ID) | Phase 2 / M6 | **Closed:** Authentik (ADR-0016) |
 | OD-4 | Collaboration engine (Phoenix + Yjs vs tldraw sync on Node) | Phase 3 | Phoenix + Yjs |
 | OD-5 | Matrix homeserver (Tuwunel vs Synapse + MAS) | Phase 3 | Synapse + MAS |
 | OD-6 | Terraform vs OpenTofu as the long-term IaC binary | M2 | Terraform (module is tested against it) |

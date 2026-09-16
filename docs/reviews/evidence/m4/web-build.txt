@@ -1,0 +1,12 @@
+$ pnpm build
+[build] output: "static"
+[build] 22 page(s) built
+[pagefind] Pagefind indexed 22 pages
+[WARN] [ivp:wkd] no public key at src/pgp/publickey.asc; skipping /pgp/ivan.asc and WKD
+$ pnpm lint:html
+check-dist: 22 pages OK, 96 files
+exit=0
+
+dist/notes.html CSP includes:
+  connect-src 'self' https://notes-api.ivanpanev.net
+  script-src 'self' 'wasm-unsafe-eval' 'sha256-...' (hash-only)

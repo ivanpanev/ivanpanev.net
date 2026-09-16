@@ -1,0 +1,3 @@
+command: tflint
+cwd: c:\Users\doubl\Mysite\infra\terraform\hetzner
+exit=0

@@ -36,8 +36,11 @@ Crypto model (all key material derived and used in the browser):
    against the live API; an attacker would still need `authProof`, which
    exists only in the client and in transit.
 4. Every item is encrypted with AES-256-GCM under `encKey` with a random
-   96-bit nonce; item metadata (title, kind, language) is inside the
-   ciphertext envelope. The server stores opaque bytes plus size and expiry.
+   96-bit nonce. Title, language, filename, and MIME type live inside the
+   ciphertext envelope. The server also stores an opaque `kind` enum
+   (`text`/`code`/`image`) as a listing hint so the UI can render the item
+   list without decrypting; it is not confidentiality-sensitive. Size and
+   expiry are stored in the clear.
 5. The same passcode on any device deterministically reproduces all keys.
 
 The server never receives the passcode, `encKey`, or plaintext, and cannot
@@ -86,3 +89,5 @@ Storage: Postgres `bytea` for ciphertext in Phase 1 (OD-7 tracks S3 offload).
   `authProof`; added the in-transit versus at-rest compromise distinction.
 - 2026-09-16 (M0-R2-F06): repaired the broken paragraph about shared
   passcodes; no change of substance.
+- 2026-09-16 (M4-R1-F09): server may store `kind` as a listing hint; all
+  other item metadata remains inside the envelope.

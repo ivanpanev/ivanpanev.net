@@ -1,0 +1,97 @@
+# Chart: authentik/authentik 2026.8.2 (Postgres-only; no Redis).
+# existingSecret supplies AUTHENTIK_SECRET_KEY only. authentik.postgresql.*
+# is ignored when existingSecret is set — DB host/user/password must be env.
+# Password comes from the CNPG-generated Secret authentik-app (not SOPS).
+
+fullnameOverride: authentik
+
+global:
+  env:
+    - name: AUTHENTIK_POSTGRESQL__HOST
+      value: authentik-rw
+    - name: AUTHENTIK_POSTGRESQL__NAME
+      value: authentik
+    - name: AUTHENTIK_POSTGRESQL__PORT
+      value: "5432"
+    - name: AUTHENTIK_POSTGRESQL__USER
+      valueFrom:
+        secretKeyRef:
+          name: authentik-app
+          key: username
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-app
+          key: password
+
+authentik:
+  enabled: true
+  secret_key: ""
+  existingSecret:
+    secretName: authentik-config
+  error_reporting:
+    enabled: false
+
+postgresql:
+  enabled: false
+
+geoip:
+  enabled: false
+
+serviceAccount:
+  create: false
+
+server:
+  replicas: 1
+  ingress:
+    enabled: false
+  route:
+    main:
+      enabled: false
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  podAnnotations:
+    # Bump when rotating authentik-config; chart checksum/secret is empty
+    # under existingSecret (M6-R1-F03).
+    ivp.net/config-epoch: "1"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  containerSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: RuntimeDefault
+
+worker:
+  replicas: 1
+  podAnnotations:
+    ivp.net/config-epoch: "1"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  containerSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: RuntimeDefault

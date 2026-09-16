@@ -1,0 +1,10 @@
+NAME                                       CLASS              ADDRESS     PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/public   cilium-clusterip   10.0.64.1   True         128m
+
+NAME                                          HOSTNAMES                   AGE
+httproute.gateway.networking.k8s.io/argocd    ["argocd.ivanpanev.net"]    133m
+httproute.gateway.networking.k8s.io/grafana   ["grafana.ivanpanev.net"]   133m
+httproute.gateway.networking.k8s.io/hubble    ["hubble.ivanpanev.net"]    133m
+
+NAME                            TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/cilium-gateway-public   NodePort   10.0.107.114   <none>        80:30337/TCP   128m

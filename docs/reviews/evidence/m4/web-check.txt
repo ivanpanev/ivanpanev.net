@@ -1,0 +1,7 @@
+$ pnpm check
+$ astro check
+Result (72 files):
+- 0 errors
+- 0 warnings
+- 0 hints
+exit=0

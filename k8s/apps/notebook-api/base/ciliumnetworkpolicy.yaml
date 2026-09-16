@@ -1,0 +1,24 @@
+# CNPG instance pods (initdb, primary, replicas, backup jobs) talk to the API
+# server. kube-apiserver is a hostNetwork static pod on the control-plane
+# node: Cilium classifies it as the reserved `kube-apiserver` entity, so
+# neither a kube-system namespaceSelector nor an ipBlock in a plain
+# NetworkPolicy can match it (Cilium does not apply CIDR rules to cluster
+# nodes). Hubble showed `policy-verdict:none EGRESS DENIED` to 10.0.64.1:6443
+# until this rule existed. Cilium merges this allow-list with the
+# NetworkPolicy in networkpolicy.yaml.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: notebook-postgres-apiserver
+  namespace: notebook
+spec:
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: notebook
+  egress:
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP

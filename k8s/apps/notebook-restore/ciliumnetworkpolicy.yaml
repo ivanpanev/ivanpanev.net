@@ -1,0 +1,16 @@
+# Restore-drill CNPG cluster: same API-server egress as the production one
+# (see k8s/apps/notebook-api/base/ciliumnetworkpolicy.yaml).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: notebook-restore-apiserver
+  namespace: notebook-restore
+spec:
+  endpointSelector: {}
+  egress:
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP

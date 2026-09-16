@@ -1,0 +1,19 @@
+# Same reasoning as k8s/apps/notebook-api/base/ciliumnetworkpolicy.yaml:
+# CNPG instance pods must reach kube-apiserver, which is the reserved
+# Cilium entity, not a kube-system pod or a plain CIDR.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authentik-postgres-apiserver
+  namespace: authentik
+spec:
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: authentik
+  egress:
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP

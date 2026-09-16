@@ -88,18 +88,7 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # CNPG instance manager talks to the API server. kube-apiserver is a
-    # hostNetwork static pod, so Cilium sees the control-plane node identity,
-    # not a kube-system pod; a namespaceSelector never matches it. The
-    # kubernetes Service (10.0.96.1:443) is DNAT'd to <cp-node>:6443 before
-    # policy evaluation. Control-plane node subnet from hcloud-k8s 5.9.1
-    # defaults (10.0.64.0/20).
-    - to:
-        - ipBlock:
-            cidr: 10.0.64.0/20
-      ports:
-        - protocol: TCP
-          port: 6443
+    # API-server egress lives in ciliumnetworkpolicy.yaml (Cilium entity).
     # Object storage (barman-cloud WAL archive + base backups) over HTTPS.
     - to:
         - ipBlock:

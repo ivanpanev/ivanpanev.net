@@ -7,6 +7,7 @@ resources:
   - scheduledbackup.yaml
   - deployment.yaml
   - networkpolicy.yaml
+  - ciliumnetworkpolicy.yaml
   - servicemonitor.yaml
   - referencegrant.yaml
 generators:

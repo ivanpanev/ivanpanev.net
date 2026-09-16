@@ -126,14 +126,14 @@ jobs:
           set -euo pipefail
           # shellcheck disable=SC1091
           source scripts/versions.env
-          curl -fsSL -o kustomize.tgz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${PIN_KUSTOMIZE}/kustomize_v${PIN_KUSTOMIZE}_linux_amd64.tar.gz"
-          echo "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d  kustomize.tgz" | sha256sum -c -
-          tar -xzf kustomize.tgz
-          install -m 0755 kustomize "$GITHUB_WORKSPACE/kustomize"
+          tool="$(mktemp -d)"   # outside the checkout so nothing stray is committed
+          curl -fsSL -o "$tool/kustomize.tgz" "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${PIN_KUSTOMIZE}/kustomize_v${PIN_KUSTOMIZE}_linux_amd64.tar.gz"
+          echo "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d  $tool/kustomize.tgz" | sha256sum -c -
+          tar -xzf "$tool/kustomize.tgz" -C "$tool" kustomize
           overlay=k8s/apps/notebook-api/overlays/hetzner
           (
             cd "$overlay"
-            "$GITHUB_WORKSPACE/kustomize" edit set image \
+            "$tool/kustomize" edit set image \
               "ghcr.io/ivanpanev/notebook-api=${IMAGE}:${GITHUB_SHA}@${DIGEST}"
           )
           git config user.name "github-actions[bot]"
@@ -146,5 +146,13 @@ jobs:
           git commit -m "chore(notebook-api): deploy ${GITHUB_SHA}
 
           [skip ci]"
-          git push
+          # main may have moved while the image built; rebase the one-file
+          # commit and retry a few times before giving up.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            echo "push attempt $attempt failed, retrying"
+            sleep $((attempt * 5))
+          done
+          exit 1
 

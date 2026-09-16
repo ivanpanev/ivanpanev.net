@@ -1,22 +1,22 @@
 # gitleaks configuration for .github/workflows/hygiene.yml (full-history scan).
 # Only values that are provably not secrets are allow-listed, by exact value,
 # never by path, so a real credential in the same file would still fail.
+# gitleaks 8.24 reads the singular [allowlist] table for global rules.
 
 title = "ivanpanev.net"
 
 [extend]
 useDefault = true
 
-[[allowlists]]
-description = "Deterministic ADR-0009 unit-test vector (public constants derived from the passcode 'vector-pass-12')"
+[allowlist]
+description = "Known non-secrets"
 regexes = [
+  # Deterministic ADR-0009 unit-test vector (public constants derived from the
+  # passcode 'vector-pass-12' in apps/web/tests/unit/notebook.test.ts).
   '''x_EVvABulmcPJTikMZdw1Tghv8polB0miTx78M8dHTI''',
   '''_CScnpTPzwrBCk5DxB4HbWcZV8c2NZTgbrUZwwJW_0Q''',
-]
-
-[[allowlists]]
-description = "SHA-256 of the empty string (and its typo) quoted in review notes about the Authentik checksum annotation"
-regexes = [
+  # SHA-256 of the empty string (and a typo of it) quoted in docs/reviews/m6-*
+  # about the Authentik chart's checksum/secret annotation.
   '''01ba4719c80b6fe911b091a7c05124b64eece964e09c058ef8f9805daca546b''',
   '''01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b''',
 ]

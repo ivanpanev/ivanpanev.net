@@ -69,7 +69,8 @@ jobs:
         with:
           working-directory: apps/notebook-api
       - name: govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+        # v1.1.4 panics on Go 1.27 syntax (unexpected expr: *ast.KeyValueExpr).
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
 
   image:
     name: build push sign

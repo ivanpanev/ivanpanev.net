@@ -23,6 +23,14 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+    # API server: hostNetwork static pod on the control-plane subnet, reached
+    # post-DNAT on 6443 (see k8s/apps/notebook-api/base/networkpolicy.yaml).
+    - to:
+        - ipBlock:
+            cidr: 10.0.64.0/20
+      ports:
+        - protocol: TCP
+          port: 6443
     - ports:
         - protocol: TCP
           port: 443

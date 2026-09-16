@@ -1,17 +1,22 @@
-# gitleaks configuration: extend the default rules and allow-list known non-secrets.
-# No directory is exempt (M0-R1-F05): evidence packs are scanned like everything else.
+# gitleaks configuration for .github/workflows/hygiene.yml (full-history scan).
+# Only values that are provably not secrets are allow-listed, by exact value,
+# never by path, so a real credential in the same file would still fail.
+
 title = "ivanpanev.net"
 
 [extend]
 useDefault = true
 
 [[allowlists]]
-description = "Known non-secrets"
+description = "Deterministic ADR-0009 unit-test vector (public constants derived from the passcode 'vector-pass-12')"
 regexes = [
-  # SOPS-encrypted values are ciphertext, not secrets
-  '''ENC\[AES256_GCM,data:.*\]''',
-  # age public keys are public
-  '''age1[0-9a-z]{58}''',
-  # placeholder in .sops.yaml
-  '''age1PLACEHOLDER[A-Za-z0-9_-]*''',
+  '''x_EVvABulmcPJTikMZdw1Tghv8polB0miTx78M8dHTI''',
+  '''_CScnpTPzwrBCk5DxB4HbWcZV8c2NZTgbrUZwwJW_0Q''',
+]
+
+[[allowlists]]
+description = "SHA-256 of the empty string (and its typo) quoted in review notes about the Authentik checksum annotation"
+regexes = [
+  '''01ba4719c80b6fe911b091a7c05124b64eece964e09c058ef8f9805daca546b''',
+  '''01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b''',
 ]

@@ -1,8 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../base
+- ../../base
 images:
-  - name: ghcr.io/ivanpanev/notebook-api
-    newName: ghcr.io/ivanpanev/notebook-api
-    newTag: main
+- digest: sha256:66afc5ffa23f7023d92d18c34893140062e1ea1eb8d9e24f782d71cf13ecff6a
+  name: ghcr.io/ivanpanev/notebook-api
+  newName: ghcr.io/ivanpanev/notebook-api
+  newTag: 5cf81bcacf536e530e9a1c5025f3d76c7bc2ebb1

@@ -1,0 +1,1 @@
+(no resource reports modified=true for notebook-api, gateway, authentik-resources)

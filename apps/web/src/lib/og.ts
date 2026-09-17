@@ -56,15 +56,15 @@ export async function renderOgPng(input: OgInput): Promise<Uint8Array> {
       flexDirection: 'column',
       justifyContent: 'space-between',
       padding: '64px 72px',
-      background: 'linear-gradient(135deg, #101215 0%, #1a1f2a 100%)',
-      color: '#e8eaed',
+      background: '#121110',
+      color: '#eeeae2',
       fontFamily: 'Inter',
     },
     children: [
       el('div', {
         style: { display: 'flex', alignItems: 'center', gap: 14, fontSize: 26, color: '#a7aeb8' },
         children: [
-          el('div', { style: { width: 16, height: 16, borderRadius: 999, background: '#7aa7ff' } }),
+          el('div', { style: { width: 10, height: 10, borderRadius: 999, background: '#0c6e17' } }),
           el('div', { children: input.kicker ?? input.site }),
         ],
       }),

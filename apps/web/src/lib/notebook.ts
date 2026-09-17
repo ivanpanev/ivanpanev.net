@@ -12,10 +12,25 @@
 import { argon2id } from 'hash-wasm';
 
 export const NOTEBOOK_SALT_INFO = 'ivanpanev.net/notebook/v1';
+export const NOTEBOOK_PIN_SALT_INFO = 'ivanpanev.net/notebook/pin/v1';
+export const EDITOR_SALT_INFO = 'ivanpanev.net/editor/v1';
 export const ARGON2 = { iterations: 3, memorySize: 65536, parallelism: 1, hashLength: 96 } as const;
 export const API_BASE = (import.meta.env.PUBLIC_NOTES_API as string | undefined) ?? 'https://notes-api.ivanpanev.net';
 
-export type ItemKind = 'text' | 'code' | 'image';
+/** Exclusive lifetime menu for notes and the editor cloud save. Nothing else. */
+export const TTL_OPTIONS = [
+  { label: '3m', seconds: 180, query: '3m' },
+  { label: '8m', seconds: 480, query: '8m' },
+  { label: '18m', seconds: 1080, query: '18m' },
+  { label: '38m', seconds: 2280, query: '38m' },
+  { label: '1h18m', seconds: 4680, query: '1h18m' },
+  { label: '2h 38m', seconds: 9480, query: '2h38m' },
+  { label: '5h18m', seconds: 19080, query: '5h18m' },
+] as const;
+export type TtlOption = (typeof TTL_OPTIONS)[number];
+export const DEFAULT_TTL: TtlOption = TTL_OPTIONS[2];
+
+export type ItemKind = 'text' | 'code' | 'image' | 'workspace';
 
 export interface NotebookKeys {
   lookupKey: Uint8Array;
@@ -66,6 +81,32 @@ export function passcodeMeetsPolicy(passcode: string): { ok: true } | { ok: fals
   return { ok: false, reason: 'Use at least 12 characters, or at least three dictionary words.' };
 }
 
+const CODE_ALPHABET = '234567abcdefghijklmnopqrstuvwxyz';
+
+export function generateNotebookCode(random: () => number = () => crypto.getRandomValues(new Uint8Array(1))[0]!): string {
+  let raw = '';
+  while (raw.length < 10) {
+    const b = random();
+    if (b >= 256 - (256 % CODE_ALPHABET.length)) continue;
+    raw += CODE_ALPHABET[b % CODE_ALPHABET.length];
+  }
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
+}
+
+export function normalizeNotebookCode(code: string): string {
+  return code.toLowerCase().replace(/[^2-7a-z]/g, '');
+}
+
+export function pinMeetsPolicy(pin: string): { ok: true } | { ok: false; reason: string } {
+  if (pin.length >= 4) return { ok: true };
+  return { ok: false, reason: 'PIN must be at least 4 characters.' };
+}
+
+export function codeMeetsPolicy(code: string): { ok: true } | { ok: false; reason: string } {
+  if (normalizeNotebookCode(code).length >= 10) return { ok: true };
+  return { ok: false, reason: 'Notebook code must be 10 characters (hyphens optional).' };
+}
+
 export async function sha256(data: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest('SHA-256', data as BufferSource));
 }
@@ -84,10 +125,10 @@ export function unb64url(s: string): Uint8Array {
   return out;
 }
 
-export async function deriveKeys(passcode: string, kdf: Argon2idFn = defaultKdf): Promise<NotebookKeys> {
-  const salt = await sha256(new TextEncoder().encode(NOTEBOOK_SALT_INFO));
+async function deriveFromSecret(secret: string, saltInfo: string, kdf: Argon2idFn): Promise<NotebookKeys> {
+  const salt = await sha256(new TextEncoder().encode(saltInfo));
   const raw = await kdf({
-    password: passcode,
+    password: secret,
     salt,
     iterations: ARGON2.iterations,
     memorySize: ARGON2.memorySize,
@@ -106,6 +147,18 @@ export async function deriveKeys(passcode: string, kdf: Argon2idFn = defaultKdf)
     notebookId: b64url(await sha256(lookupKey)),
     authProof: b64url(await sha256(authKey)),
   };
+}
+
+export async function deriveKeys(passcode: string, kdf: Argon2idFn = defaultKdf): Promise<NotebookKeys> {
+  return deriveFromSecret(passcode, NOTEBOOK_SALT_INFO, kdf);
+}
+
+export async function derivePinKeys(code: string, pin: string, kdf: Argon2idFn = defaultKdf): Promise<NotebookKeys> {
+  return deriveFromSecret(`${normalizeNotebookCode(code)}\0${pin}`, NOTEBOOK_PIN_SALT_INFO, kdf);
+}
+
+export async function deriveEditorKeys(passcode: string, kdf: Argon2idFn = defaultKdf): Promise<NotebookKeys> {
+  return deriveFromSecret(passcode, EDITOR_SALT_INFO, kdf);
 }
 
 export async function encryptEnvelope(encKey: Uint8Array, envelope: Envelope): Promise<{ nonce: string; ciphertext: string }> {
@@ -201,7 +254,7 @@ async function api(path: string, init: RequestInit = {}): Promise<Response> {
   return retried;
 }
 
-export async function putNotebook(keys: NotebookKeys, ttl = '24h'): Promise<void> {
+export async function putNotebook(keys: NotebookKeys, ttl: TtlOption['query'] = DEFAULT_TTL.query): Promise<void> {
   const r = await api(`/v1/notebooks/${keys.notebookId}?ttl=${encodeURIComponent(ttl)}`, {
     method: 'PUT',
     headers: { 'X-Auth': keys.authProof },

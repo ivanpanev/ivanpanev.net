@@ -18,5 +18,17 @@ export const TOOLS = [
     name: 'Secret generator',
     description: 'Uniformly random strings and EFF-wordlist passphrases, with honest entropy figures.',
   },
+  {
+    id: 'color',
+    href: '/tools/color',
+    name: 'Colour picker',
+    description: 'Named colours, palettes, and a Photoshop-style sampler from an image.',
+  },
+  {
+    id: 'editor',
+    href: '/tools/editor',
+    name: 'Editor',
+    description: 'A Notepad++-flavoured browser editor with tabs, split view, and a cloud save.',
+  },
 ] as const;
 export type ToolId = (typeof TOOLS)[number]['id'];

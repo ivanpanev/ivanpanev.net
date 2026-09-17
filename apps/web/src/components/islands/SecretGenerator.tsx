@@ -68,7 +68,7 @@ export default function SecretGenerator() {
             role="tab"
             type="button"
             aria-selected={mode === m}
-            className={`rounded px-3 py-1 text-sm capitalize ${mode === m ? 'bg-accent text-accent-fg' : 'text-fg-muted hover:text-fg'}`}
+            className={`rounded px-3 py-1 text-sm capitalize ${mode === m ? 'bg-accent-fill text-accent-fg' : 'text-fg-muted hover:text-fg'}`}
             onClick={() => setMode(m)}
           >
             {m === 'string' ? 'Random string' : 'Passphrase'}

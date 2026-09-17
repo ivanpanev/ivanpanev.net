@@ -8,7 +8,7 @@ test('first visit picks a random skin and follows the system theme', async ({ pa
   await expect(html).toHaveAttribute('data-theme', 'dark');
   await expect(html).toHaveAttribute('data-theme-pref', 'system');
   const skin = await html.getAttribute('data-skin');
-  expect(['graphite', 'ember', 'tide']).toContain(skin);
+  expect(['koke', 'murasaki', 'kaki']).toContain(skin);
   const stored = await page.evaluate(() => localStorage.getItem('ivp.skin'));
   expect(stored).toBe(skin);
   // No theme flash: the attribute is set by the head script, so computed
@@ -24,22 +24,22 @@ test('choosing a theme and skin persists across reloads and tabs', async ({ page
   await waitForHydration(page);
   await page.getByRole('button', { name: /Appearance/ }).click();
   await page.getByRole('menuitemradio', { name: 'dark' }).click();
-  await page.getByRole('menuitemradio', { name: 'Ember' }).click();
+  await page.getByRole('menuitemradio', { name: 'Murasaki' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('html')).toHaveAttribute('data-skin', 'ember');
+  await expect(page.locator('html')).toHaveAttribute('data-skin', 'murasaki');
 
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('html')).toHaveAttribute('data-skin', 'ember');
+  await expect(page.locator('html')).toHaveAttribute('data-skin', 'murasaki');
 
   const other = await context.newPage();
   await other.goto('/about');
   await waitForHydration(other);
-  await expect(other.locator('html')).toHaveAttribute('data-skin', 'ember');
+  await expect(other.locator('html')).toHaveAttribute('data-skin', 'murasaki');
   // Change in the second tab propagates to the first via the storage event.
   await other.getByRole('button', { name: /Appearance/ }).click();
-  await other.getByRole('menuitemradio', { name: 'Tide' }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-skin', 'tide');
+  await other.getByRole('menuitemradio', { name: 'Kaki' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-skin', 'kaki');
   c.assertClean();
 });
 

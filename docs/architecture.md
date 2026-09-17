@@ -85,3 +85,9 @@ not deeper wildcards.
 | M4 | notebook-api, CNPG cluster, /notes island | r2: 8 PASS |
 | M5 | Restore overlay, platform alerts, threat model, cost, migration checklist | r3: 8 PASS |
 | M6 | Authentik OIDC IdP, CNPG, Access hostname | r2: 8 PASS |
+| M7 | Ship and hand over: live GitOps, notes-api, rate-limit + client 429 handling | r2: 8 PASS |
+| M8 | Zen tokens (koke / murasaki / kaki), Zen fonts, hanko | r1: 8 PASS |
+| M9 | Quick PIN (code + PIN), exclusive TTL 3m–5h18m, per-notebook lockout | r1: 8 PASS |
+| M10 | Subnet first/last usable, /tools/color picker | r1: 8 PASS |
+| M11 | /tools/editor CodeMirror 6, IndexedDB + cloud workspace | r1: 8 PASS |
+| M12 | DrealNote static curated lines on Home and About | r1: 8 PASS |

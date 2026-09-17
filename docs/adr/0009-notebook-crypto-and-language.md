@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-16
+- Last revised: 2026-09-17
 - Deciders: Ivan Panev
 
 ## Context
@@ -56,9 +57,18 @@ pick the same passcode share a notebook. Mitigations: the UI requires >= 12
 characters or >= 3 dictionary words, offers a generated passphrase, and
 displays a clear warning.
 
+Quick PIN mode (2026-09-17): a bare 4-character PIN would leave ~10^4
+addresses. The client therefore requires a generated 10-character notebook
+code plus a PIN of at least 4 characters. Keys are Argon2id of
+`normalize(code) || NUL || PIN` with salt
+`SHA-256("ivanpanev.net/notebook/pin/v1")`. The editor tool uses the same
+API with salt `ivanpanev.net/editor/v1` and item kind `workspace`.
+
 Server-side controls: per-IP token bucket, Cloudflare rate-limiting rule on
-`/v1/*`, item cap 20 MB, notebook cap 100 MB and 50 items, TTL 1 hour to 7
-days, expiry sweeper, all limits configurable via environment.
+`/v1/*`, per-notebook failed `X-Auth` lockout (10 failures in 15 minutes →
+15-minute 429), item cap 20 MB, notebook cap 100 MB and 50 items, TTL 3
+  minutes to 5 hours 18 minutes (UI offers only 3m, 8m, 18m, 38m, 1h18m,
+  2h 38m, 5h18m), expiry sweeper, all limits configurable via environment.
 
 Storage: Postgres `bytea` for ciphertext in Phase 1 (OD-7 tracks S3 offload).
 

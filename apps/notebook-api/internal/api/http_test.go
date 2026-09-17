@@ -353,6 +353,39 @@ func TestRetryIdempotentStore(t *testing.T) {
 	}
 }
 
+func TestAuthLockoutAfterFailures(t *testing.T) {
+	_, h := testServer(t)
+	id := notebookID()
+	good := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
+	good.Header.Set("X-Auth", authProof())
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, good)
+	if w.Code != 200 {
+		t.Fatalf("seed %d %s", w.Code, w.Body.String())
+	}
+	other := sha256.Sum256([]byte("other"))
+	wrong := base64.RawURLEncoding.EncodeToString(other[:])
+	for i := 0; i < authFailMax; i++ {
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
+		req.Header.Set("X-Auth", wrong)
+		rw := httptest.NewRecorder()
+		h.ServeHTTP(rw, req)
+		if i < authFailMax-1 && rw.Code != http.StatusUnauthorized {
+			t.Fatalf("fail %d status %d", i, rw.Code)
+		}
+		if i == authFailMax-1 && rw.Code != http.StatusTooManyRequests {
+			t.Fatalf("lock status %d %s", rw.Code, rw.Body.String())
+		}
+	}
+	again := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/v1/notebooks/"+id, nil)
+	again.Header.Set("X-Auth", authProof())
+	rw := httptest.NewRecorder()
+	h.ServeHTTP(rw, again)
+	if rw.Code != http.StatusTooManyRequests {
+		t.Fatalf("expected lock, got %d", rw.Code)
+	}
+}
+
 func TestInvalidNotebookID(t *testing.T) {
 	_, h := testServer(t)
 	r := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/v1/notebooks/not-a-hash/items", nil)

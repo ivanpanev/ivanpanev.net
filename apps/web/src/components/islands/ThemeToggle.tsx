@@ -15,7 +15,7 @@ import {
  */
 export default function ThemeToggle() {
   const [pref, setPref] = useState<ThemePref>('system');
-  const [skin, setSkin] = useState<SkinId>('graphite');
+  const [skin, setSkin] = useState<SkinId>('koke');
   const [open, setOpen] = useState(false);
   const menuId = useId();
 

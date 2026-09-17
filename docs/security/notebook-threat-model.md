@@ -62,8 +62,14 @@ leaked passcodes fall immediately; the UI requires ≥ 12 characters or ≥ 3
 words and offers a generated passphrase. That is the real residual risk.
 
 `PUT /v1/notebooks/{id}` creates a notebook. A guesser who never hits an
-existing id therefore writes empty rows. TTL (1 h–7 d) and the sweeper bound
+existing id therefore writes empty rows. TTL (3 m–5 h 18 m) and the sweeper bound
 that junk.
+
+Quick PIN mode is code + PIN, not PIN alone. A 10-character Crockford-style
+code is ~32^10 addresses; a leaked code without the PIN still requires
+online guesses against a 4+ character PIN, which the per-notebook lockout
+(10 failures / 15 min) stops. PIN-only would have been 10^4 enumerable
+notebooks and is rejected.
 
 `GET /v1/notebooks/{id}/items` is unauthenticated and returns an empty list
 for both "unknown" and "empty", so a wrong passcode is indistinguishable from
@@ -96,7 +102,7 @@ UUID without `encKey` still yields garbage.
 
 ### Abuse / resource exhaustion
 
-Caps: 20 MiB/item, 100 MiB/notebook, 50 items, TTL ≤ 7 days. Body
+Caps: 20 MiB/item, 100 MiB/notebook, 50 items, TTL ≤ 5 h 18 m. Body
 `MaxBytesReader`. Cloudflare 100 MiB request ceiling. Two API replicas
 behind a PDB. Postgres is one instance in Phase 1 (accepted; restore is
 Milestone 5).

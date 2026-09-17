@@ -63,7 +63,7 @@ function resolves(href) {
 }
 
 // Outbound links the site is allowed to make. Anything else is a typo or a tracker until proven otherwise.
-const EXTERNAL_OK = /^https?:\/\/(creativecommons\.org|github\.com|www\.eff\.org|openpgpjs\.org|astro\.build|developers\.cloudflare\.com|keyoxide\.org)(\/|$)/;
+const EXTERNAL_OK = /^https?:\/\/(creativecommons\.org|github\.com|www\.eff\.org|openpgpjs\.org|astro\.build|developers\.cloudflare\.com|keyoxide\.org|dreal\.net)(\/|$)/;
 // <link rel=...> values that fetch a resource (must be same-origin); canonical/alternate are just URLs.
 const FETCHING_REL = /\b(stylesheet|preload|modulepreload|prefetch|icon|apple-touch-icon|manifest)\b/;
 

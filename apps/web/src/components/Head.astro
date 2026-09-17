@@ -50,8 +50,8 @@ Astro.csp?.insertScriptHash(headScriptHash);
 <meta name="description" content={description} />
 <meta name="author" content={SITE.author} />
 <meta name="color-scheme" content="light dark" />
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa" />
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#101215" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f5ef" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121110" />
 {noindex && <meta name="robots" content="noindex" />}
 <link rel="canonical" href={canonical} />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -61,7 +61,8 @@ Astro.csp?.insertScriptHash(headScriptHash);
 <link rel="alternate" type="application/rss+xml" title={`${SITE.title} · Blog`} href="/rss.xml" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 {siteKey && <link rel="pgpkey" type="application/pgp-keys" href={`/pgp/${keyLocal}.asc`} />}
-<Font cssVariable="--font-inter" preload />
+<Font cssVariable="--font-zen-kaku" preload />
+<Font cssVariable="--font-zen-mincho" />
 <Font cssVariable="--font-jetbrains-mono" />
 
 <meta property="og:site_name" content={SITE.title} />

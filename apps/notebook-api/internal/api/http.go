@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -25,6 +26,9 @@ import (
 
 const maxAuthHeader = 128
 const maxJSONOverhead = 1 << 20
+const authFailMax = 10
+const authFailWindow = 15 * time.Minute
+const authLockFor = 15 * time.Minute
 
 func wireLimit(maxItemBytes int64) int64 {
 	// Ciphertext is unpadded base64url in JSON (~4/3) plus envelope wrapping.
@@ -90,6 +94,9 @@ func (s *Server) putNotebook(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid notebook id")
 		return
 	}
+	if s.rejectIfLocked(w, r, id) {
+		return
+	}
 	proof, err := parseAuth(r)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "missing or invalid X-Auth")
@@ -100,9 +107,14 @@ func (s *Server) putNotebook(w http.ResponseWriter, r *http.Request) {
 	if err := withRetry(r.Context(), func() error {
 		return s.store.UpsertNotebook(r.Context(), id, hash[:], s.now().Add(ttl))
 	}); err != nil {
+		if errors.Is(err, store.ErrForbidden) {
+			s.recordAuthFailure(w, r, id)
+			return
+		}
 		s.writeStoreErr(w, err)
 		return
 	}
+	s.clearAuthFailures(r, id)
 	writeJSON(w, http.StatusOK, map[string]any{"id": id, "expiresIn": int(ttl.Seconds())})
 }
 
@@ -150,6 +162,9 @@ func (s *Server) postItem(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid notebook id")
 		return
 	}
+	if s.rejectIfLocked(w, r, id) {
+		return
+	}
 	proof, err := parseAuth(r)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "missing or invalid X-Auth")
@@ -164,9 +179,10 @@ func (s *Server) postItem(w http.ResponseWriter, r *http.Request) {
 	}
 	want := sha256.Sum256(proof)
 	if subtle.ConstantTimeCompare(nb.AuthHash, want[:]) != 1 {
-		writeError(w, http.StatusUnauthorized, "unauthorized")
+		s.recordAuthFailure(w, r, id)
 		return
 	}
+	s.clearAuthFailures(r, id)
 
 	r.Body = http.MaxBytesReader(w, r.Body, wireLimit(s.cfg.MaxItemBytes))
 	var body postItemBody
@@ -228,6 +244,9 @@ func (s *Server) extendNotebook(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid notebook id")
 		return
 	}
+	if s.rejectIfLocked(w, r, id) {
+		return
+	}
 	proof, err := parseAuth(r)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "missing or invalid X-Auth")
@@ -252,9 +271,14 @@ func (s *Server) extendNotebook(w http.ResponseWriter, r *http.Request) {
 	if err := withRetry(r.Context(), func() error {
 		return s.store.ExtendNotebook(r.Context(), id, hash[:], s.now().Add(ttl))
 	}); err != nil {
+		if errors.Is(err, store.ErrForbidden) {
+			s.recordAuthFailure(w, r, id)
+			return
+		}
 		s.writeStoreErr(w, err)
 		return
 	}
+	s.clearAuthFailures(r, id)
 	writeJSON(w, http.StatusOK, map[string]any{"expiresIn": int(ttl.Seconds())})
 }
 
@@ -288,6 +312,16 @@ func (s *Server) deleteItem(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid item id")
 		return
 	}
+	it, err := retryStore(r.Context(), func() (store.Item, error) {
+		return s.store.GetItem(r.Context(), id)
+	})
+	if err != nil {
+		s.writeStoreErr(w, err)
+		return
+	}
+	if s.rejectIfLocked(w, r, it.NotebookID) {
+		return
+	}
 	proof, err := parseAuth(r)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "missing or invalid X-Auth")
@@ -297,10 +331,55 @@ func (s *Server) deleteItem(w http.ResponseWriter, r *http.Request) {
 	if err := withRetry(r.Context(), func() error {
 		return s.store.DeleteItem(r.Context(), id, hash[:])
 	}); err != nil {
+		if errors.Is(err, store.ErrForbidden) {
+			s.recordAuthFailure(w, r, it.NotebookID)
+			return
+		}
 		s.writeStoreErr(w, err)
 		return
 	}
+	s.clearAuthFailures(r, it.NotebookID)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) rejectIfLocked(w http.ResponseWriter, r *http.Request, id string) bool {
+	until, locked, err := s.store.AuthLocked(r.Context(), id, s.now())
+	if err != nil {
+		s.writeStoreErr(w, err)
+		return true
+	}
+	if !locked {
+		return false
+	}
+	retry := int(until.Sub(s.now()).Seconds())
+	if retry < 1 {
+		retry = 1
+	}
+	w.Header().Set("Retry-After", strconv.Itoa(retry))
+	writeError(w, http.StatusTooManyRequests, "too many failed attempts; try again later")
+	return true
+}
+
+func (s *Server) recordAuthFailure(w http.ResponseWriter, r *http.Request, id string) {
+	until, locked, err := s.store.RecordAuthFailure(r.Context(), id, s.now(), authFailMax, authFailWindow, authLockFor)
+	if err != nil {
+		s.writeStoreErr(w, err)
+		return
+	}
+	if locked {
+		retry := int(until.Sub(s.now()).Seconds())
+		if retry < 1 {
+			retry = 1
+		}
+		w.Header().Set("Retry-After", strconv.Itoa(retry))
+		writeError(w, http.StatusTooManyRequests, "too many failed attempts; try again later")
+		return
+	}
+	writeError(w, http.StatusUnauthorized, "unauthorized")
+}
+
+func (s *Server) clearAuthFailures(r *http.Request, id string) {
+	_ = s.store.ClearAuthFailures(r.Context(), id)
 }
 
 func retryable(err error) bool {
@@ -353,6 +432,9 @@ func (s *Server) writeStoreErr(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusRequestEntityTooLarge, "notebook full")
 	case errors.Is(err, store.ErrConflict):
 		writeError(w, http.StatusConflict, "conflict")
+	case errors.Is(err, store.ErrLocked):
+		w.Header().Set("Retry-After", "900")
+		writeError(w, http.StatusTooManyRequests, "too many failed attempts; try again later")
 	case errors.Is(err, store.ErrInvalidInput):
 		writeError(w, http.StatusBadRequest, "invalid input")
 	default:

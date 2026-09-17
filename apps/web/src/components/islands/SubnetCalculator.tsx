@@ -95,6 +95,8 @@ export default function SubnetCalculator() {
               <Row k="Netmask" v={info.netmask} copy />
               {info.wildcard && <Row k="Wildcard" v={info.wildcard} copy />}
               {info.broadcast && <Row k="Broadcast" v={info.broadcast} copy />}
+              <Row k="First usable" v={info.firstHost} copy />
+              <Row k="Last usable" v={info.lastHost} copy />
               <Row
                 k={info.family === 4 && info.prefixLength <= 30 ? 'Usable range' : 'Range'}
                 v={`${info.firstHost} – ${info.lastHost}`}

@@ -9,7 +9,7 @@ for (const path of CORE_PAGES) {
     await expect(page.locator('main h1').first()).toBeVisible();
     // The head script must have run before first paint.
     await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
-    await expect(page.locator('html')).toHaveAttribute('data-skin', /graphite|ember|tide/);
+    await expect(page.locator('html')).toHaveAttribute('data-skin', /koke|murasaki|kaki/);
     // CSP meta present with hash-based script-src and no 'unsafe-inline' for scripts.
     const csp = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
     expect(csp).toContain("default-src 'none'");

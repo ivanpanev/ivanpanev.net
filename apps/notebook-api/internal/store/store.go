@@ -12,19 +12,21 @@ var (
 	ErrConflict     = errors.New("conflict")
 	ErrLimit        = errors.New("limit exceeded")
 	ErrInvalidInput = errors.New("invalid input")
+	ErrLocked       = errors.New("locked")
 )
 
 type Kind string
 
 const (
-	KindText  Kind = "text"
-	KindCode  Kind = "code"
-	KindImage Kind = "image"
+	KindText      Kind = "text"
+	KindCode      Kind = "code"
+	KindImage     Kind = "image"
+	KindWorkspace Kind = "workspace"
 )
 
 func ParseKind(s string) (Kind, bool) {
 	switch Kind(s) {
-	case KindText, KindCode, KindImage:
+	case KindText, KindCode, KindImage, KindWorkspace:
 		return Kind(s), true
 	default:
 		return "", false
@@ -67,4 +69,7 @@ type Store interface {
 	DeleteItem(ctx context.Context, id string, authHash []byte) error
 	Sweep(ctx context.Context, now time.Time) (notebooks, items int64, err error)
 	Ping(ctx context.Context) error
+	AuthLocked(ctx context.Context, notebookID string, now time.Time) (lockedUntil time.Time, ok bool, err error)
+	RecordAuthFailure(ctx context.Context, notebookID string, now time.Time, maxFails int, window, lockFor time.Duration) (lockedUntil time.Time, locked bool, err error)
+	ClearAuthFailures(ctx context.Context, notebookID string) error
 }

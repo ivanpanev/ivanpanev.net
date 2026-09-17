@@ -12,9 +12,9 @@ export const THEME_PREFS = ['system', 'light', 'dark'] as const;
 export type ThemePref = (typeof THEME_PREFS)[number];
 
 export const SKINS = [
-  { id: 'graphite', label: 'Graphite', description: 'Neutral greys, blue accent' },
-  { id: 'ember', label: 'Ember', description: 'Warm paper, copper accent' },
-  { id: 'tide', label: 'Tide', description: 'Cool slate, teal accent' },
+  { id: 'koke', label: 'Koke', description: 'Moss green accent' },
+  { id: 'murasaki', label: 'Murasaki', description: 'Violet accent' },
+  { id: 'kaki', label: 'Kaki', description: 'Persimmon accent' },
 ] as const;
 export type SkinId = (typeof SKINS)[number]['id'];
 export const SKIN_IDS = SKINS.map((s) => s.id) as readonly SkinId[];

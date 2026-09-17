@@ -98,8 +98,8 @@ paths:
               properties:
                 ttlSeconds:
                   type: integer
-                  minimum: 3600
-                  maximum: 604800
+                  minimum: 180
+                  maximum: 19080
       responses:
         "200":
           description: expiry moved
@@ -157,7 +157,7 @@ components:
       in: query
       schema:
         type: string
-        description: Go duration or seconds (clamped to 1h–7d)
+        description: Go duration or seconds (clamped to 3m–5h18m)
   schemas:
     NewItem:
       type: object
@@ -166,7 +166,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [text, code, image]
+          enum: [text, code, image, workspace]
         nonce:
           type: string
           description: unpadded base64url, 12 bytes
@@ -175,5 +175,5 @@ components:
           description: unpadded base64url AES-256-GCM output
         ttlSeconds:
           type: integer
-          minimum: 3600
-          maximum: 604800
+          minimum: 180
+          maximum: 19080

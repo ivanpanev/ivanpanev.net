@@ -9,7 +9,7 @@ describe('theme model', () => {
     expect(isThemePref('dark')).toBe(true);
     expect(isThemePref('blue')).toBe(false);
     expect(isThemePref(null)).toBe(false);
-    expect(isSkinId('ember')).toBe(true);
+    expect(isSkinId('koke')).toBe(true);
     expect(isSkinId('neon')).toBe(false);
   });
   it('resolves system preference', () => {
@@ -63,11 +63,11 @@ describe('head script', () => {
   });
 
   it('applies stored theme and skin before first paint', () => {
-    const w = fakeWindow({ storage: { [STORAGE_KEYS.theme]: 'dark', [STORAGE_KEYS.skin]: 'tide' }, prefersDark: false });
+    const w = fakeWindow({ storage: { [STORAGE_KEYS.theme]: 'dark', [STORAGE_KEYS.skin]: 'kaki' }, prefersDark: false });
     vm.runInNewContext(src, w.ctx);
     expect(w.attrs['data-theme']).toBe('dark');
     expect(w.attrs['data-theme-pref']).toBe('dark');
-    expect(w.attrs['data-skin']).toBe('tide');
+    expect(w.attrs['data-skin']).toBe('kaki');
   });
 
   it('follows the system theme when nothing is stored and picks + persists a random skin', () => {
@@ -93,10 +93,10 @@ describe('head script', () => {
     expect(w.attrs['data-theme']).toBe('light');
     w.listeners['storage']![0]!({ key: STORAGE_KEYS.theme, newValue: 'dark' });
     expect(w.attrs['data-theme']).toBe('dark');
-    w.listeners['storage']![0]!({ key: STORAGE_KEYS.skin, newValue: 'ember' });
-    expect(w.attrs['data-skin']).toBe('ember');
+    w.listeners['storage']![0]!({ key: STORAGE_KEYS.skin, newValue: 'murasaki' });
+    expect(w.attrs['data-skin']).toBe('murasaki');
     w.listeners['storage']![0]!({ key: STORAGE_KEYS.skin, newValue: 'bogus' });
-    expect(w.attrs['data-skin']).toBe('ember');
+    expect(w.attrs['data-skin']).toBe('murasaki');
   });
 
   it('paints theme and skin when storage is blocked', () => {

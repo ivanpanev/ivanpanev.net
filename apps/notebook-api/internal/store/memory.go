@@ -10,17 +10,25 @@ import (
 )
 
 // Memory is an in-process Store used by handler tests. Not for production.
+type authState struct {
+	failures    int
+	windowStart time.Time
+	lockedUntil time.Time
+}
+
 type Memory struct {
-	mu         sync.Mutex
-	notebooks  map[string]Notebook
-	items      map[string]Item
-	now        func() time.Time
+	mu        sync.Mutex
+	notebooks map[string]Notebook
+	items     map[string]Item
+	auth      map[string]authState
+	now       func() time.Time
 }
 
 func NewMemory() *Memory {
 	return &Memory{
 		notebooks: make(map[string]Notebook),
 		items:     make(map[string]Item),
+		auth:      make(map[string]authState),
 		now:       time.Now,
 	}
 }
@@ -179,3 +187,38 @@ func (m *Memory) Sweep(_ context.Context, now time.Time) (int64, int64, error) {
 }
 
 func (m *Memory) Ping(context.Context) error { return nil }
+
+func (m *Memory) AuthLocked(_ context.Context, notebookID string, now time.Time) (time.Time, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	st, ok := m.auth[notebookID]
+	if !ok || !st.lockedUntil.After(now) {
+		return time.Time{}, false, nil
+	}
+	return st.lockedUntil, true, nil
+}
+
+func (m *Memory) RecordAuthFailure(_ context.Context, notebookID string, now time.Time, maxFails int, window, lockFor time.Duration) (time.Time, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	st := m.auth[notebookID]
+	if now.Sub(st.windowStart) > window {
+		st.failures = 0
+		st.windowStart = now
+	}
+	st.failures++
+	if st.failures >= maxFails {
+		st.lockedUntil = now.Add(lockFor)
+		m.auth[notebookID] = st
+		return st.lockedUntil, true, nil
+	}
+	m.auth[notebookID] = st
+	return time.Time{}, false, nil
+}
+
+func (m *Memory) ClearAuthFailures(_ context.Context, notebookID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.auth, notebookID)
+	return nil
+}

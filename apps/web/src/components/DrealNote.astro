@@ -1,0 +1,15 @@
+---
+import lines from '@/content/dreal.json';
+
+const day = Math.floor(Date.now() / 86_400_000);
+const line = lines.lines[day % lines.lines.length] ?? lines.lines[0]!;
+---
+
+<aside class="mt-20 border-t border-line pt-8 text-sm text-fg-subtle" aria-label="A note from dreal.net">
+  <p class="max-w-prose italic">{line}</p>
+  <p class="mt-2">
+    <a class="underline decoration-line underline-offset-4 hover:text-fg" href={lines.source} rel="noopener noreferrer">
+      {lines.attribution}
+    </a>
+  </p>
+</aside>

@@ -12,6 +12,8 @@ export const CORE_PAGES = [
   '/tools/subnet',
   '/tools/counter',
   '/tools/secrets',
+  '/tools/color',
+  '/tools/editor',
   '/notes',
   '/pgp',
   '/verify',

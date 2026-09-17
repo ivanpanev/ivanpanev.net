@@ -12,7 +12,14 @@ import {
   extendNotebook,
   getItem,
   listItems,
+  codeMeetsPolicy,
+  deriveEditorKeys,
+  derivePinKeys,
+  generateNotebookCode,
+  normalizeNotebookCode,
   passcodeMeetsPolicy,
+  pinMeetsPolicy,
+  TTL_OPTIONS,
   postItem,
   putNotebook,
   sha256,
@@ -51,6 +58,37 @@ describe('passcodeMeetsPolicy', () => {
   it('rejects short strings', () => {
     const r = passcodeMeetsPolicy('short');
     expect(r.ok).toBe(false);
+  });
+});
+
+describe('TTL_OPTIONS', () => {
+  it('is exactly the seven lifetimes and nothing else', () => {
+    expect(TTL_OPTIONS.map((t) => t.label)).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h 38m', '5h18m']);
+    expect(TTL_OPTIONS.map((t) => t.query)).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h38m', '5h18m']);
+    expect(TTL_OPTIONS.map((t) => t.seconds)).toEqual([180, 480, 1080, 2280, 4680, 9480, 19080]);
+  });
+});
+
+describe('PIN mode helpers', () => {
+  it('formats a 10-character code', () => {
+    let n = 0;
+    const code = generateNotebookCode(() => n++);
+    expect(normalizeNotebookCode(code)).toHaveLength(10);
+    expect(codeMeetsPolicy(code).ok).toBe(true);
+  });
+  it('accepts a 4-character PIN and rejects shorter', () => {
+    expect(pinMeetsPolicy('1234').ok).toBe(true);
+    expect(pinMeetsPolicy('abc').ok).toBe(false);
+  });
+  it('PIN keys differ from passphrase keys for the same secret', async () => {
+    const a = await deriveKeys('twelve chars!', fakeKdf);
+    const b = await derivePinKeys('k7f3q9zm2x', 'twelve chars!', fakeKdf);
+    expect(a.notebookId).not.toBe(b.notebookId);
+  });
+  it('editor keys differ from notebook keys for the same secret', async () => {
+    const a = await deriveKeys('twelve chars!', fakeKdf);
+    const b = await deriveEditorKeys('twelve chars!', fakeKdf);
+    expect(a.notebookId).not.toBe(b.notebookId);
   });
 });
 
@@ -127,7 +165,7 @@ describe('API client', () => {
   it('puts, lists, posts, gets, extends and deletes', async () => {
     const keys = await deriveKeys('twelve chars!', fakeKdf);
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ id: keys.notebookId, expiresIn: 86400 }), { status: 200 }));
-    await putNotebook(keys, '24h');
+    await putNotebook(keys, '18m');
     expect(String(fetchMock.mock.calls[0]![0])).toContain(`/v1/notebooks/${keys.notebookId}`);
     const putHeaders = new Headers((fetchMock.mock.calls[0]![1] as RequestInit).headers);
     expect(putHeaders.get('X-Auth')).toBe(keys.authProof);

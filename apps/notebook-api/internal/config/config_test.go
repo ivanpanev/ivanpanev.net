@@ -22,7 +22,7 @@ func TestFromEnvDefaults(t *testing.T) {
 	if c.MaxItemBytes != 20<<20 || c.MaxItems != 50 || c.MaxNotebookBytes != 100<<20 {
 		t.Fatalf("caps %+v", c)
 	}
-	if c.MinTTL != time.Hour || c.MaxTTL != 7*24*time.Hour {
+	if c.MinTTL != 3*time.Minute || c.MaxTTL != 5*time.Hour+18*time.Minute || c.DefaultTTL != 18*time.Minute {
 		t.Fatalf("ttl %+v", c)
 	}
 	if len(c.CORSOrigins) != 2 || c.CORSOrigins[1] != "https://example.test" {

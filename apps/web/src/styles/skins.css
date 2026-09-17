@@ -1,134 +1,100 @@
-/* Token layer. Each skin defines a light and a dark palette; the theme picks
-   which one is live. Everything else in the site references only these names.
+/* Token layer. Three Zen accents share one washi/sumi canvas.
    Contrast targets (checked against canvas, surface and surface-2): fg >= 12:1,
-   fg-muted >= 6.5:1, fg-subtle >= 4.5:1 (it is used for small text),
+   fg-muted >= 6.5:1, fg-subtle >= 4.5:1,
    accent-fg on accent >= 4.5:1, accent as link on canvas >= 4.5:1. */
 
-/* Swatches shown in the skin picker regardless of the active skin. */
 :root {
-  --swatch-graphite: #1f5fd6;
-  --swatch-ember: #b4501c;
-  --swatch-tide: #0b7285;
+  --swatch-koke: #0c6e17;
+  --swatch-murasaki: #3c0b78;
+  --swatch-kaki: #cc700e;
 }
 
-/* ---------- graphite: neutral greys, blue accent ---------- */
-:root[data-skin='graphite'] {
-  --canvas: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f1f2f4;
-  --fg: #16181d;
-  --fg-muted: #4d5560;
-  --fg-subtle: #626b78;
-  --line: #e2e5ea;
-  --accent: #1f5fd6;
-  --accent-fg: #ffffff;
-  --accent-soft: #dbe6fb;
-  --ok: #157f3d;
+:root[data-skin='koke'],
+:root[data-skin='murasaki'],
+:root[data-skin='kaki'] {
+  --canvas: #f7f5ef;
+  --surface: #faf8f3;
+  --surface-2: #efece3;
+  --fg: #1a1916;
+  --fg-muted: #534f47;
+  --fg-subtle: #6b665c;
+  --line: #d9d4c7;
+  --ok: #0d6a19;
   --warn: #9a5b00;
-  --danger: #b3261e;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 16px -8px rgb(0 0 0 / 0.08);
+  --danger: #a32018;
+  --shadow: none;
 }
-:root[data-skin='graphite'][data-theme='dark'] {
-  --canvas: #101215;
-  --surface: #16191d;
-  --surface-2: #1e2227;
-  --fg: #e8eaed;
-  --fg-muted: #a7aeb8;
-  --fg-subtle: #8a919c;
-  --line: #2a2f36;
-  --accent: #7aa7ff;
-  --accent-fg: #0b1a3a;
-  --accent-soft: #1d2b4a;
-  --ok: #5fcf8a;
+
+:root[data-skin='koke'] {
+  --accent: #0d6a19;
+  --accent-fill: #0c6e17;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #d7ead6;
+}
+
+:root[data-skin='murasaki'] {
+  --accent: #3d0f78;
+  --accent-fill: #3c0b78;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #e6dcf3;
+}
+
+:root[data-skin='kaki'] {
+  --accent: #7a3f04;
+  --accent-fill: #8a4904;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #f3e2c8;
+}
+
+:root[data-skin='koke'][data-theme='dark'],
+:root[data-skin='murasaki'][data-theme='dark'],
+:root[data-skin='kaki'][data-theme='dark'] {
+  --canvas: #121110;
+  --surface: #181715;
+  --surface-2: #22201c;
+  --fg: #eeeae2;
+  --fg-muted: #b4aea3;
+  --fg-subtle: #8f897e;
+  --line: #322f2a;
+  --ok: #7fd18a;
   --warn: #e3a94a;
   --danger: #f28b82;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow: none;
 }
 
-/* ---------- ember: warm paper, copper accent ---------- */
-:root[data-skin='ember'] {
-  --canvas: #fbf7f1;
-  --surface: #fffdf9;
-  --surface-2: #f3ece2;
-  --fg: #221a14;
-  --fg-muted: #5c4f45;
-  --fg-subtle: #706255;
-  --line: #e7dccd;
-  --accent: #b4501c;
-  --accent-fg: #ffffff;
-  --accent-soft: #f6dfd0;
-  --ok: #2f7d3a;
-  --warn: #9a5b00;
-  --danger: #b3261e;
-  --shadow: 0 1px 2px rgb(60 30 0 / 0.06), 0 4px 16px -8px rgb(60 30 0 / 0.1);
-}
-:root[data-skin='ember'][data-theme='dark'] {
-  --canvas: #15110e;
-  --surface: #1c1713;
-  --surface-2: #261f19;
-  --fg: #efe6dc;
-  --fg-muted: #b8aa9b;
-  --fg-subtle: #9a8d80;
-  --line: #352c25;
-  --accent: #f0955a;
-  --accent-fg: #2a1204;
-  --accent-soft: #4a2a17;
-  --ok: #6dcc7c;
-  --warn: #e3a94a;
-  --danger: #f28b82;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+:root[data-skin='koke'][data-theme='dark'] {
+  --accent: #7fd18a;
+  --accent-fill: #0c6e17;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #1a3320;
 }
 
-/* ---------- tide: cool slate, teal accent ---------- */
-:root[data-skin='tide'] {
-  --canvas: #f5f8fa;
-  --surface: #ffffff;
-  --surface-2: #e9eff3;
-  --fg: #101a20;
-  --fg-muted: #44555f;
-  --fg-subtle: #5a6c76;
-  --line: #d9e2e8;
-  --accent: #0b7285;
-  --accent-fg: #ffffff;
-  --accent-soft: #d2eef3;
-  --ok: #157f3d;
-  --warn: #9a5b00;
-  --danger: #b3261e;
-  --shadow: 0 1px 2px rgb(0 30 40 / 0.06), 0 4px 16px -8px rgb(0 30 40 / 0.1);
-}
-:root[data-skin='tide'][data-theme='dark'] {
-  --canvas: #0c1418;
-  --surface: #111b20;
-  --surface-2: #17242b;
-  --fg: #e4ecf0;
-  --fg-muted: #a3b4bd;
-  --fg-subtle: #8797a1;
-  --line: #22323a;
-  --accent: #5cc8db;
-  --accent-fg: #03242b;
-  --accent-soft: #123a44;
-  --ok: #5fcf8a;
-  --warn: #e3a94a;
-  --danger: #f28b82;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+:root[data-skin='murasaki'][data-theme='dark'] {
+  --accent: #c9a6f5;
+  --accent-fill: #3c0b78;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #2a1a40;
 }
 
-/* Fallback before the head script runs (it always runs, but keep the page
-   readable if scripting is disabled). */
+:root[data-skin='kaki'][data-theme='dark'] {
+  --accent: #f2a24f;
+  --accent-fill: #8a4904;
+  --accent-fg: #f7f5ef;
+  --accent-soft: #3a2610;
+}
+
 :root:not([data-skin]) {
-  --canvas: #fafafa; --surface: #ffffff; --surface-2: #f1f2f4;
-  --fg: #16181d; --fg-muted: #4d5560; --fg-subtle: #626b78; --line: #e2e5ea;
-  --accent: #1f5fd6; --accent-fg: #ffffff; --accent-soft: #dbe6fb;
-  --ok: #157f3d; --warn: #9a5b00; --danger: #b3261e;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  --canvas: #f7f5ef; --surface: #faf8f3; --surface-2: #efece3;
+  --fg: #1a1916; --fg-muted: #534f47; --fg-subtle: #6b665c; --line: #d9d4c7;
+  --accent: #0d6a19; --accent-fill: #0c6e17; --accent-fg: #f7f5ef; --accent-soft: #d7ead6;
+  --ok: #0d6a19; --warn: #9a5b00; --danger: #a32018; --shadow: none;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-skin]) {
     color-scheme: dark;
-    --canvas: #101215; --surface: #16191d; --surface-2: #1e2227;
-    --fg: #e8eaed; --fg-muted: #a7aeb8; --fg-subtle: #8a919c; --line: #2a2f36;
-    --accent: #7aa7ff; --accent-fg: #0b1a3a; --accent-soft: #1d2b4a;
-    --ok: #5fcf8a; --warn: #e3a94a; --danger: #f28b82;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --canvas: #121110; --surface: #181715; --surface-2: #22201c;
+    --fg: #eeeae2; --fg-muted: #b4aea3; --fg-subtle: #8f897e; --line: #322f2a;
+    --accent: #7fd18a; --accent-fill: #0c6e17; --accent-fg: #f7f5ef; --accent-soft: #1a3320;
+    --ok: #7fd18a; --warn: #e3a94a; --danger: #f28b82; --shadow: none;
   }
 }

@@ -2,6 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - clusterissuer.yaml
-  - certificate.yaml
+  # certificate.yaml (wildcard-ivanpanev-net) is parked until the DNS-01
+  # token in cloudflare-api-token.secret.yaml is a dedicated, non-IP-locked
+  # token (docs/runbooks/secrets.md, "Cloudflare API tokens"). Nothing
+  # consumes the secret yet, and a Certificate that cannot be issued retries
+  # until Cloudflare throttles the token for every other consumer
+  # (M7-R1-F04). Re-add the line once the token is in place.
 generators:
   - ksops-generator.yaml

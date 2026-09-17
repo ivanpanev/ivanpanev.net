@@ -66,4 +66,26 @@ test.describe('notes', () => {
     await expect(page.getByText('text ·')).toBeVisible();
     c.assertClean();
   });
+
+  test('lifetime menu is exactly the seven options', async ({ page }) => {
+    await page.goto('/notes');
+    await waitForHydration(page);
+    const labels = await page.locator('#ttl option').allTextContents();
+    expect(labels.map((s) => s.trim())).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h 38m', '5h18m']);
+  });
+
+  test('Quick PIN rejects a short PIN without calling the API', async ({ page }) => {
+    let apiHits = 0;
+    await page.route(`${API}/**`, (route) => {
+      apiHits++;
+      return route.abort();
+    });
+    await page.goto('/notes');
+    await waitForHydration(page);
+    await page.getByRole('tab', { name: 'Quick PIN' }).click();
+    await page.getByLabel('PIN').fill('12');
+    await page.getByRole('button', { name: 'Open notebook' }).click();
+    await expect(page.getByRole('alert')).toContainText('PIN must be at least 4');
+    expect(apiHits).toBe(0);
+  });
 });

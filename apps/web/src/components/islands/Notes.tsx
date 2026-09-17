@@ -1,14 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
 import { generatePassphrase } from '@/lib/secrets';
 import {
+  DEFAULT_TTL,
+  TTL_OPTIONS,
+  codeMeetsPolicy,
   decryptEnvelope,
   deleteItem,
   deriveKeys,
+  derivePinKeys,
   encryptEnvelope,
   extendNotebook,
+  generateNotebookCode,
   getItem,
   listItems,
   passcodeMeetsPolicy,
+  pinMeetsPolicy,
   postItem,
   putNotebook,
   type Envelope,
@@ -18,20 +24,18 @@ import {
 } from '@/lib/notebook';
 import CopyButton from './CopyButton';
 
-const TTL_OPTIONS = [
-  { label: '1 hour', seconds: 3600, query: '1h' },
-  { label: '6 hours', seconds: 6 * 3600, query: '6h' },
-  { label: '24 hours', seconds: 24 * 3600, query: '24h' },
-  { label: '7 days', seconds: 7 * 24 * 3600, query: '168h' },
-] as const;
-
 const LANGUAGES = ['text', 'go', 'typescript', 'python', 'bash', 'yaml', 'json', 'markdown'] as const;
 
 type Opened = { keys: NotebookKeys; items: ItemMeta[] };
 
+type UnlockMode = 'passphrase' | 'pin';
+
 export default function Notes() {
+  const [mode, setMode] = useState<UnlockMode>('passphrase');
   const [passcode, setPasscode] = useState('');
-  const [ttl, setTtl] = useState<(typeof TTL_OPTIONS)[number]>(TTL_OPTIONS[2]);
+  const [code, setCode] = useState(() => generateNotebookCode());
+  const [pin, setPin] = useState('');
+  const [ttl, setTtl] = useState<(typeof TTL_OPTIONS)[number]>(DEFAULT_TTL);
   const [busy, setBusy] = useState<'idle' | 'derive' | 'net'>('idle');
   const [error, setError] = useState<string>();
   const [opened, setOpened] = useState<Opened>();
@@ -43,15 +47,28 @@ export default function Notes() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const unlock = useCallback(async () => {
-    const policy = passcodeMeetsPolicy(passcode);
-    if (!policy.ok) {
-      setError(policy.reason);
-      return;
+    if (mode === 'passphrase') {
+      const policy = passcodeMeetsPolicy(passcode);
+      if (!policy.ok) {
+        setError(policy.reason);
+        return;
+      }
+    } else {
+      const c = codeMeetsPolicy(code);
+      const p = pinMeetsPolicy(pin);
+      if (!c.ok) {
+        setError(c.reason);
+        return;
+      }
+      if (!p.ok) {
+        setError(p.reason);
+        return;
+      }
     }
     setBusy('derive');
     setError(undefined);
     try {
-      const keys = await deriveKeys(passcode);
+      const keys = mode === 'passphrase' ? await deriveKeys(passcode) : await derivePinKeys(code, pin);
       setBusy('net');
       await putNotebook(keys, ttl.query);
       const items = await listItems(keys);
@@ -62,7 +79,7 @@ export default function Notes() {
     } finally {
       setBusy('idle');
     }
-  }, [passcode, ttl]);
+  }, [mode, passcode, code, pin, ttl]);
 
   async function refresh(keys: NotebookKeys) {
     const items = await listItems(keys);
@@ -190,20 +207,72 @@ export default function Notes() {
           void unlock();
         }}
       >
-        <div>
-          <label htmlFor="passcode" className="text-sm font-medium">
-            Passcode
-          </label>
-          <input
-            id="passcode"
-            type="password"
-            autoComplete="off"
-            spellCheck={false}
-            value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-            className="mt-1 w-full rounded-md border border-line bg-canvas px-3 py-2 font-mono text-sm"
-          />
+        <div role="tablist" aria-label="Unlock mode" className="inline-flex border border-line p-0.5">
+          {(
+            [
+              ['passphrase', 'Passphrase'],
+              ['pin', 'Quick PIN'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={mode === id}
+              className={`rounded-sm px-3 py-1 text-sm ${mode === id ? 'bg-accent-fill text-accent-fg' : 'text-fg-muted hover:text-fg'}`}
+              onClick={() => setMode(id)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
+        {mode === 'passphrase' ? (
+          <div>
+            <label htmlFor="passcode" className="text-sm font-medium">
+              Passcode
+            </label>
+            <input
+              id="passcode"
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              className="field mt-1 font-mono text-sm"
+            />
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="notebook-code" className="text-sm font-medium">
+                Notebook code
+              </label>
+              <input
+                id="notebook-code"
+                autoComplete="off"
+                spellCheck={false}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="field mt-1 font-mono text-sm"
+              />
+              <p className="mt-1 text-xs text-fg-muted">Share this with the PIN. Generated for you; you can type your own.</p>
+            </div>
+            <div>
+              <label htmlFor="pin" className="text-sm font-medium">
+                PIN
+              </label>
+              <input
+                id="pin"
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="field mt-1 font-mono text-sm"
+              />
+            </div>
+          </div>
+        )}
         <div className="flex flex-wrap items-end gap-3">
           <div>
             <label htmlFor="ttl" className="text-sm font-medium">
@@ -225,9 +294,15 @@ export default function Notes() {
           <button type="submit" className="btn btn-primary" disabled={busy !== 'idle'}>
             {deriving ? 'Deriving keys…' : locked ? 'Open notebook' : 'Re-open'}
           </button>
-          <button type="button" className="btn" onClick={generate}>
-            Generate passphrase
-          </button>
+          {mode === 'passphrase' ? (
+            <button type="button" className="btn" onClick={generate}>
+              Generate passphrase
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={() => setCode(generateNotebookCode())}>
+              New code
+            </button>
+          )}
         </div>
         {deriving ? (
           <p role="status" className="text-sm text-fg-muted">
@@ -256,7 +331,7 @@ export default function Notes() {
                   type="button"
                   role="tab"
                   aria-selected={kind === k}
-                  className={`rounded px-3 py-1 text-sm capitalize ${kind === k ? 'bg-accent text-accent-fg' : 'text-fg-muted hover:text-fg'}`}
+                  className={`rounded px-3 py-1 text-sm capitalize ${kind === k ? 'bg-accent-fill text-accent-fg' : 'text-fg-muted hover:text-fg'}`}
                   onClick={() => setKind(k)}
                 >
                   {k}

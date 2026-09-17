@@ -64,3 +64,41 @@ end to end: signed commits, signed images, provenance.
 
 - 2026-09-16 (M0-R1-F11, M0-R1-F15): Renovate replaces Dependabot; SHA
   pinning rule and hygiene workflow recorded.
+- 2026-09-17 (M7, M7-R1-F02): how "`main` is protected" is realised now
+  that `main` exists and Argo CD auto-syncs it with prune and self-heal.
+  - A GitHub ruleset named `main` (target: the default branch, enforcement
+    active) forbids deletion and non-fast-forward pushes, requires linear
+    history, and requires the four `hygiene.yml` jobs (`gitleaks`,
+    `sops files are encrypted`, `shellcheck`, `no CRLF in LF files`) to have
+    passed on a commit before `main` can move to it. Only jobs that run on
+    every change are required; the path-filtered workflows (`web`,
+    `notebook-api`, `k8s-validate`, `terraform`) cannot be required without
+    blocking every unrelated change, so they stay advisory and are read in
+    the PR.
+  - The operator therefore works on a branch and opens a pull request so
+    `hygiene` runs, then fast-forwards `main` to the checked commit (or
+    merges the PR). Pushing straight to `main` is refused.
+  - The overlay digest bump in `notebook-api.yml` is the one automated
+    writer. It runs in its own job that executes nothing but the pinned
+    checkout action and a shell script, and it pushes over SSH with a
+    write deploy key scoped to this repository, held in the `overlay-bump`
+    environment as `OVERLAY_BUMP_DEPLOY_KEY`. Every `GITHUB_TOKEN` in the
+    workflow is `contents: read`, so a compromised build or sign action
+    cannot reach the repository. "Deploy keys" is the ruleset's single
+    bypass actor; the GitHub Actions app cannot be one on a personal
+    repository (GitHub rejects it: "must be part of the ruleset source or
+    owner organization"), and a bump PR is not an option because events
+    raised with `GITHUB_TOKEN` do not start `pull_request` workflows, so its
+    checks would never run. `[skip ci]` was removed from the bump so
+    `hygiene` and `k8s-validate` do run on it (M7-R1-F08). Rotating the
+    deploy key: generate a new ed25519 pair, replace the repository deploy
+    key (write) and the environment secret, delete the old key.
+  - Signed commits remain the decision but are not yet enforced: adding a
+    signing key to the GitHub account is an operator step (BACKLOG "M7
+    operator actions" (e)). When it is done, `required_signatures` is added
+    to the ruleset and Argo CD `signatureKeys` is set on the project so an
+    unsigned commit on `main` is not synced.
+  - Residual risk, accepted: the operator's PAT (through a PR) and the
+    deploy key (directly) can both move `main`; the PAT is the operator's
+    own identity and the deploy key is reachable only from a job that runs
+    no third-party code.

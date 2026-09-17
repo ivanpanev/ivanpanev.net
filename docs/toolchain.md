@@ -49,11 +49,30 @@ cosign), `secrets` (SOPS, age). Git and the GitHub CLI are always installed.
 | --- | --- | --- |
 | Hetzner Cloud API token | Terraform (hetzner root) | read/write on the project |
 | Hetzner Object Storage S3 key pair | Terraform state backend, Loki, CNPG backups, etcd snapshots | per-bucket policies where possible |
-| Cloudflare API token | Terraform (cloudflare root), wrangler | Zone: DNS Edit, Zone Settings Edit; Account: Workers Scripts Edit, Access: Apps and Policies Edit, Cloudflare Tunnel Edit, Email Routing Edit |
-| Cloudflare Account ID | wrangler, Terraform | |
-| GitHub repository secrets | CI | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`; GHCR uses `GITHUB_TOKEN` |
+| Cloudflare API tokens | see "Cloudflare API tokens" below | one token per consumer |
+| Cloudflare Account ID | wrangler, Terraform | not a secret, but kept out of the tree |
+| GitHub environment secrets | `web.yml` deploy jobs | `CLOUDFLARE_API_TOKEN` (deploy token below), `CLOUDFLARE_ACCOUNT_ID`, in the `production` and `preview` environments only, never at repository level; GHCR uses `GITHUB_TOKEN` |
 | age private key | SOPS decryption on the operator machine | `SOPS_AGE_KEY_FILE` |
 | OpenPGP key material | commit signing, article signatures | offline certify key; subkeys on hardware token recommended |
+
+### Cloudflare API tokens
+
+This table is the only place scopes are listed; `web.yml`,
+`apps/web/README.md`, the Argo CD runbook and the review backlog point here.
+Three consumers, three tokens. Minting one token with the union of these
+scopes and sharing it put Access-policy and Tunnel edit rights into CI and
+into a cluster Secret (M7-R1-F03).
+
+| Consumer | Token lives | Permissions | Resources | Client IP filtering |
+| --- | --- | --- | --- | --- |
+| Terraform, `infra/terraform/cloudflare` | operator machine only (`CLOUDFLARE_API_TOKEN` in the shell) | Zone: DNS Edit, Zone Settings Edit, Zone WAF Edit (rate limit and redirect rulesets), Zone Read; Account: Access: Apps and Policies Edit, Cloudflare Tunnel Edit, Email Routing Addresses Edit, Account Rulesets Read | account + zone `ivanpanev.net` | allowed, operator egress IP(s) |
+| `web.yml` deploy (`wrangler deploy`) | GitHub environments `production` and `preview` as `CLOUDFLARE_API_TOKEN` | Account: Workers Scripts Edit, Account Settings Read; Zone: Workers Routes Edit, Zone Read | account + zone `ivanpanev.net` | none. GitHub runner IPs rotate; an IP filter fails with `9109 Cannot use the access token from location` |
+| cert-manager DNS-01 | `k8s/infrastructure/cert-manager-issuers/cloudflare-api-token.secret.yaml` (SOPS) | Zone: DNS Edit, Zone Read | zone `ivanpanev.net` | none. Node IPs change on rebuild; same 9109 failure, then `10502 Too many authentication failures` for every consumer of that token |
+
+Rotate a token by minting the replacement, swapping it at the single place
+it lives, then rolling the old one on the Cloudflare side. A token that has
+been in CI logs or a cluster Secret is treated as exposed and rolled, not
+re-scoped.
 
 ## Workstation constraint (2026-09-16)
 

@@ -213,6 +213,58 @@ func (p *Postgres) DeleteItem(ctx context.Context, id string, authHash []byte) e
 	return ErrForbidden
 }
 
+func (p *Postgres) AuthLocked(ctx context.Context, notebookID string, now time.Time) (time.Time, bool, error) {
+	var until time.Time
+	err := p.pool.QueryRow(ctx, `
+		SELECT locked_until FROM auth_attempts
+		WHERE notebook_id = $1 AND locked_until IS NOT NULL AND locked_until > $2`,
+		notebookID, now).Scan(&until)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return time.Time{}, false, nil
+	}
+	if err != nil {
+		return time.Time{}, false, err
+	}
+	return until, true, nil
+}
+
+func (p *Postgres) RecordAuthFailure(ctx context.Context, notebookID string, now time.Time, maxFails int, window, lockFor time.Duration) (time.Time, bool, error) {
+	var until *time.Time
+	err := p.pool.QueryRow(ctx, `
+		INSERT INTO auth_attempts (notebook_id, failures, window_start, locked_until)
+		VALUES ($1, 1, $2, NULL)
+		ON CONFLICT (notebook_id) DO UPDATE SET
+		  failures = CASE
+		    WHEN auth_attempts.window_start < $2 - make_interval(secs => $3) THEN 1
+		    ELSE auth_attempts.failures + 1
+		  END,
+		  window_start = CASE
+		    WHEN auth_attempts.window_start < $2 - make_interval(secs => $3) THEN $2
+		    ELSE auth_attempts.window_start
+		  END,
+		  locked_until = CASE
+		    WHEN (CASE
+		      WHEN auth_attempts.window_start < $2 - make_interval(secs => $3) THEN 1
+		      ELSE auth_attempts.failures + 1
+		    END) >= $4 THEN $2 + make_interval(secs => $5)
+		    ELSE auth_attempts.locked_until
+		  END
+		RETURNING locked_until`,
+		notebookID, now, int(window.Seconds()), maxFails, int(lockFor.Seconds())).Scan(&until)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+	if until != nil && until.After(now) {
+		return *until, true, nil
+	}
+	return time.Time{}, false, nil
+}
+
+func (p *Postgres) ClearAuthFailures(ctx context.Context, notebookID string) error {
+	_, err := p.pool.Exec(ctx, `DELETE FROM auth_attempts WHERE notebook_id = $1`, notebookID)
+	return err
+}
+
 func (p *Postgres) Sweep(ctx context.Context, now time.Time) (int64, int64, error) {
 	it, err := p.pool.Exec(ctx, `DELETE FROM items WHERE expires_at <= $1`, now)
 	if err != nil {

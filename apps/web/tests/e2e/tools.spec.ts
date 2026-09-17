@@ -11,6 +11,9 @@ test.describe('subnet calculator', () => {
     const summary = page.getByRole('region', { name: 'Summary' });
     await expect(summary).toContainText('192.168.10.128/26');
     await expect(summary).toContainText('192.168.10.191');
+    await expect(summary).toContainText('First usable');
+    await expect(summary).toContainText('Last usable');
+    await expect(summary).toContainText('192.168.10.129');
     await expect(summary).toContainText('62');
     await expect(summary).toContainText('Private (RFC 1918)');
     await expect.poll(() => page.evaluate(() => decodeURIComponent(location.hash))).toBe('#192.168.10.130/26');
@@ -99,5 +102,29 @@ test.describe('secret generator', () => {
     await page.getByRole('button', { name: 'Copy' }).first().click();
     await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(value);
+  });
+});
+
+test.describe('colour picker', () => {
+  test('parses a hex value and shows conversions', async ({ page }) => {
+    const c = watchConsole(page);
+    await page.goto('/tools/color');
+    await waitForHydration(page);
+    await page.getByLabel('Any CSS colour').fill('#0c6e17');
+    await expect(page.getByRole('region', { name: 'Conversions' })).toContainText('#0c6e17');
+    await expect(page.getByText(/Contrast on washi canvas/)).toBeVisible();
+    c.assertClean();
+  });
+});
+
+test.describe('editor', () => {
+  test('mounts CodeMirror and lists the same lifetimes', async ({ page }) => {
+    const c = watchConsole(page);
+    await page.goto('/tools/editor');
+    await expect(page.locator('.npp')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.npp-host').first()).toBeVisible();
+    const labels = await page.getByLabel('Lifetime').locator('option').allTextContents();
+    expect(labels.map((s) => s.trim())).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h 38m', '5h18m']);
+    c.assertClean();
   });
 });

@@ -67,8 +67,11 @@ before they are exposed at all.
   version, the fallback is cloudflared ingress rules pointing directly at
   Services; this is a contained change in one manifest and one Terraform
   resource.
-- Adding a hostname is a one-entry change in Terraform plus an `HTTPRoute`;
-  forgetting either produces a 404, never an exposure.
+- Adding a hostname is one Terraform entry, one `HTTPRoute`, one cloudflared
+  `toEndpoints` egress rule and one backend `fromEntities: [ingress]` rule
+  (see the 2026-09-17 revision). Forgetting the first two produces a 404;
+  forgetting either policy produces a 403 from Envoy. Neither is an exposure.
+  `scripts/check-gateway-policy.py` fails CI when the policies are missing.
 
 ## Revisions
 
@@ -80,3 +83,18 @@ before they are exposed at all.
   class uses `NodePort`. The resulting Service still has a ClusterIP, which
   remains the tunnel origin. No LoadBalancer is created (CCM Service
   controller is off; Hetzner firewall does not expose NodePorts).
+- 2026-09-17 (M7, M7-R1-F05): Cilium's Gateway data path is the per-node
+  Envoy, which forwards with the reserved `ingress` identity and enforces the
+  client's egress policy against the backend pod:port, not the Gateway VIP
+  (cilium/cilium#47617). A hostname therefore also needs a
+  `CiliumNetworkPolicy` `toEndpoints` rule in
+  `k8s/infrastructure/cloudflared/ciliumnetworkpolicy.yaml` and a
+  `fromEntities: [ingress]` rule beside the backend
+  (`k8s/infrastructure/gateway/backend-ingress-entity.yaml` or the app's own
+  `ciliumnetworkpolicy.yaml`). Missing either shows as `403 Access denied`
+  with `http-request DROPPED` in `hubble observe --protocol http`; plain
+  `NetworkPolicy` `namespaceSelector: gateway` rules never match. Pod labels
+  and container ports in those rules mirror Helm chart internals, so a chart
+  rename is only visible in Hubble; `scripts/check-gateway-policy.py` checks
+  the parts that are static (namespace coverage on both sides, port
+  agreement).

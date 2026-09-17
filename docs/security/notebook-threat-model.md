@@ -21,7 +21,7 @@ Platform exposure (Tunnel, Access, supply chain) is
 [operator] --passcode--> [browser: Argon2id + AES-GCM]
                               | HTTPS notebookId + authProof + ciphertext
                               v
-                         [Cloudflare edge]  TLS terminated; rate-limit 10/10s
+                         [Cloudflare edge]  TLS terminated; rate-limit 40/10s (non-OPTIONS)
                               | Tunnel
                               v
                          [notebook-api]     never sees passcode / encKey / plaintext
@@ -46,18 +46,30 @@ Argon2id parameters: 64 MiB, 3 iterations, parallelism 1, 96-byte output.
 On a laptop this is about one second per guess, shown in the UI.
 
 The application token bucket is 2 requests/second, burst 20, keyed by
-`CF-Connecting-IP`. Cloudflare adds 10 requests / 10 seconds on `/v1/*`.
-Effective online rate against one IP: about 1 guess/second.
+`CF-Connecting-IP`, per replica (two replicas, so up to twice that before
+the edge rule binds). Cloudflare adds 40 requests / 10 seconds per IP on
+`/v1/*` for non-OPTIONS methods; measured 2026-09-17: 40× 200 then 429.
+CORS preflights are not counted at the edge: a preflight carries no `X-Auth`
+and therefore no guess, and Cloudflare's 429 has no CORS headers, so
+counting them made a normal browser session (each authenticated call is
+OPTIONS + request) fail with "Failed to fetch" (M7-R1-F01). Effective online
+rate against one IP: at most 4 guesses/second.
 
 A 12-character random password from a 95-character set is 95^12 ≈ 5.4×10^23
-candidates. At 1 r/s that is ~10^16 years. A 6-word EFF short-wordlist
+candidates. At 4 r/s that is ~10^15 years. A 6-word EFF short-wordlist
 passphrase (1296^6 ≈ 4.7×10^18) is the same story. Common, reused, or
 leaked passcodes fall immediately; the UI requires ≥ 12 characters or ≥ 3
 words and offers a generated passphrase. That is the real residual risk.
 
 `PUT /v1/notebooks/{id}` creates a notebook. A guesser who never hits an
-existing id therefore writes empty rows. TTL (1 h–7 d) and the sweeper bound
+existing id therefore writes empty rows. TTL (3 m–5 h 18 m) and the sweeper bound
 that junk.
+
+Quick PIN mode is code + PIN, not PIN alone. A 10-character Crockford-style
+code is ~32^10 addresses; a leaked code without the PIN still requires
+online guesses against a 4+ character PIN, which the per-notebook lockout
+(10 failures / 15 min) stops. PIN-only would have been 10^4 enumerable
+notebooks and is rejected.
 
 `GET /v1/notebooks/{id}/items` is unauthenticated and returns an empty list
 for both "unknown" and "empty", so a wrong passcode is indistinguishable from
@@ -90,7 +102,7 @@ UUID without `encKey` still yields garbage.
 
 ### Abuse / resource exhaustion
 
-Caps: 20 MiB/item, 100 MiB/notebook, 50 items, TTL ≤ 7 days. Body
+Caps: 20 MiB/item, 100 MiB/notebook, 50 items, TTL ≤ 5 h 18 m. Body
 `MaxBytesReader`. Cloudflare 100 MiB request ceiling. Two API replicas
 behind a PDB. Postgres is one instance in Phase 1 (accepted; restore is
 Milestone 5).

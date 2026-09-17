@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ARGON2,
+  MAX_RETRY_AFTER_MS,
   NOTEBOOK_SALT_INFO,
+  NotebookApiError,
   b64url,
   decryptEnvelope,
   deleteItem,
@@ -10,10 +12,18 @@ import {
   extendNotebook,
   getItem,
   listItems,
+  codeMeetsPolicy,
+  deriveEditorKeys,
+  derivePinKeys,
+  generateNotebookCode,
+  normalizeNotebookCode,
   passcodeMeetsPolicy,
+  pinMeetsPolicy,
+  TTL_OPTIONS,
   postItem,
   putNotebook,
   sha256,
+  timers,
   unb64url,
   type Argon2idFn,
 } from '@/lib/notebook';
@@ -48,6 +58,37 @@ describe('passcodeMeetsPolicy', () => {
   it('rejects short strings', () => {
     const r = passcodeMeetsPolicy('short');
     expect(r.ok).toBe(false);
+  });
+});
+
+describe('TTL_OPTIONS', () => {
+  it('is exactly the seven lifetimes and nothing else', () => {
+    expect(TTL_OPTIONS.map((t) => t.label)).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h 38m', '5h18m']);
+    expect(TTL_OPTIONS.map((t) => t.query)).toEqual(['3m', '8m', '18m', '38m', '1h18m', '2h38m', '5h18m']);
+    expect(TTL_OPTIONS.map((t) => t.seconds)).toEqual([180, 480, 1080, 2280, 4680, 9480, 19080]);
+  });
+});
+
+describe('PIN mode helpers', () => {
+  it('formats a 10-character code', () => {
+    let n = 0;
+    const code = generateNotebookCode(() => n++);
+    expect(normalizeNotebookCode(code)).toHaveLength(10);
+    expect(codeMeetsPolicy(code).ok).toBe(true);
+  });
+  it('accepts a 4-character PIN and rejects shorter', () => {
+    expect(pinMeetsPolicy('1234').ok).toBe(true);
+    expect(pinMeetsPolicy('abc').ok).toBe(false);
+  });
+  it('PIN keys differ from passphrase keys for the same secret', async () => {
+    const a = await deriveKeys('twelve chars!', fakeKdf);
+    const b = await derivePinKeys('k7f3q9zm2x', 'twelve chars!', fakeKdf);
+    expect(a.notebookId).not.toBe(b.notebookId);
+  });
+  it('editor keys differ from notebook keys for the same secret', async () => {
+    const a = await deriveKeys('twelve chars!', fakeKdf);
+    const b = await deriveEditorKeys('twelve chars!', fakeKdf);
+    expect(a.notebookId).not.toBe(b.notebookId);
   });
 });
 
@@ -124,7 +165,7 @@ describe('API client', () => {
   it('puts, lists, posts, gets, extends and deletes', async () => {
     const keys = await deriveKeys('twelve chars!', fakeKdf);
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ id: keys.notebookId, expiresIn: 86400 }), { status: 200 }));
-    await putNotebook(keys, '24h');
+    await putNotebook(keys, '18m');
     expect(String(fetchMock.mock.calls[0]![0])).toContain(`/v1/notebooks/${keys.notebookId}`);
     const putHeaders = new Headers((fetchMock.mock.calls[0]![1] as RequestInit).headers);
     expect(putHeaders.get('X-Auth')).toBe(keys.authProof);
@@ -155,6 +196,67 @@ describe('API client', () => {
     const keys = await deriveKeys('twelve chars!', fakeKdf);
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 }));
     await expect(putNotebook(keys)).rejects.toThrow('unauthorized');
+  });
+
+  describe('throttling and network failures (M7-R1-F01)', () => {
+    const slept: number[] = [];
+    const realSleep = timers.sleep;
+    beforeEach(() => {
+      slept.length = 0;
+      timers.sleep = async (ms) => {
+        slept.push(ms);
+      };
+    });
+    afterEach(() => {
+      timers.sleep = realSleep;
+    });
+
+    it('retries once after Retry-After on a 429 and then succeeds', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': '2' } }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ nonce: 'n', ciphertext: 'c', kind: 'text' }), { status: 200 }));
+      await expect(getItem('11111111-1111-1111-1111-111111111111')).resolves.toMatchObject({ kind: 'text' });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(slept).toEqual([2000]);
+    });
+
+    it('gives up with the wait time when the retry is throttled too', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': '1' } }))
+        .mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': '7' } }));
+      const err = await getItem('x').catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(NotebookApiError);
+      expect((err as NotebookApiError).status).toBe(429);
+      expect((err as NotebookApiError).retryAfterSeconds).toBe(7);
+      expect((err as Error).message).toContain('Try again in 7 s');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not sleep past MAX_RETRY_AFTER_MS; it reports instead', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': '60' } }));
+      await expect(getItem('x')).rejects.toThrow('Try again in 60 s');
+      expect(slept).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(60_000).toBeGreaterThan(MAX_RETRY_AFTER_MS);
+    });
+
+    it('defaults to a short wait when Retry-After is missing or garbage', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': 'soon' } }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] }), { status: 200 }));
+      const keys = await deriveKeys('twelve chars!', fakeKdf);
+      await expect(listItems(keys)).resolves.toEqual([]);
+      expect(slept).toEqual([5000]);
+    });
+
+    it('turns "Failed to fetch" into an actionable sentence', async () => {
+      fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      const err = await getItem('x').catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(NotebookApiError);
+      expect((err as Error).message).not.toBe('Failed to fetch');
+      expect((err as Error).message).toMatch(/notes service/);
+      expect((err as NotebookApiError).status).toBeUndefined();
+    });
   });
 });
 

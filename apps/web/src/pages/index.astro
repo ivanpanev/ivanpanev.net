@@ -4,6 +4,7 @@ import PostCard from '@/components/PostCard.astro';
 import { SITE } from '@/site';
 import { getPosts, getProjects, projectUrl } from '@/lib/content';
 import { TOOLS } from '@/lib/tools';
+import DrealNote from '@/components/DrealNote.astro';
 
 const posts = (await getPosts()).slice(0, 5);
 const projects = (await getProjects()).slice(0, 4);
@@ -11,7 +12,7 @@ const projects = (await getProjects()).slice(0, 4);
 
 <BaseLayout title={SITE.title} description={SITE.description}>
   <section class="mb-14">
-    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">Ivan Panev</h1>
+    <h1 class="font-serif text-4xl font-medium tracking-tight sm:text-5xl">Ivan Panev</h1>
     <p class="mt-4 max-w-prose text-lg text-fg-muted">
       Site reliability engineer, former network engineer, security and automation by inclination. This is where
       I write things down properly: essays, notes on what I am building, and a few tools I keep reaching for.
@@ -24,12 +25,12 @@ const projects = (await getProjects()).slice(0, 4);
   </section>
 
   <section class="mb-14" aria-labelledby="latest">
-    <h2 id="latest" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Latest writing</h2>
+    <h2 id="latest" class="kicker mb-5">Latest writing</h2>
     <div class="space-y-8">{posts.map((p) => <PostCard post={p} />)}</div>
   </section>
 
   <section class="mb-14" aria-labelledby="projects">
-    <h2 id="projects" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Projects</h2>
+    <h2 id="projects" class="kicker mb-5">Projects</h2>
     <ul class="grid gap-3 sm:grid-cols-2">
       {
         projects.map((p) => (
@@ -43,7 +44,7 @@ const projects = (await getProjects()).slice(0, 4);
   </section>
 
   <section aria-labelledby="tools">
-    <h2 id="tools" class="mb-5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Tools</h2>
+    <h2 id="tools" class="kicker mb-5">Tools</h2>
     <ul class="grid gap-3 sm:grid-cols-3">
       {
         TOOLS.map((t) => (
@@ -55,4 +56,5 @@ const projects = (await getProjects()).slice(0, 4);
       }
     </ul>
   </section>
+  <DrealNote />
 </BaseLayout>

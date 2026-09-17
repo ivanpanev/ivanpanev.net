@@ -13,6 +13,8 @@ command -v helm >/dev/null 2>&1 || { echo "helm is required" >&2; exit 2; }
 command -v kustomize >/dev/null 2>&1 || { echo "kustomize is required" >&2; exit 2; }
 
 "$ROOT/scripts/check-alerts.sh"
+# HTTPRoute backend <-> cloudflared egress <-> backend ingress-entity policy (M7-R1-F05).
+python3 "$ROOT/scripts/check-gateway-policy.py"
 
 if grep -R --include='*.yaml' -n 'isWALArchiver:[[:space:]]*true' k8s/apps/notebook-restore >/dev/null; then
   echo "k8s-validate: notebook-restore must not set isWALArchiver: true" >&2

@@ -2,8 +2,13 @@ name: notebook-api
 
 # Test, lint, scan, build a distroless image, push to GHCR, cosign keyless
 # sign, attach SLSA provenance, then bump the kustomize overlay tag so Argo
-# CD deploys it. The overlay commit uses [skip ci] and lives outside this
-# workflow's path filter so it does not retrigger the build (ADR-0012).
+# CD deploys it (ADR-0012).
+#
+# The bump runs in its own job with a write deploy key, so no GITHUB_TOKEN in
+# this workflow can write to the repository and the third-party build/sign
+# actions never see the key (M7-R1-F02). The overlay path is outside this
+# workflow's filter, so the bump commit does not retrigger the build; hygiene
+# and k8s-validate do run on it (M7-R1-F08).
 
 on:
   push:
@@ -79,7 +84,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
-      contents: write
+      contents: read
       id-token: write
       packages: write
       attestations: write
@@ -119,16 +124,35 @@ jobs:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
-      - name: Bump overlay image tag (no retrigger)
+
+  bump:
+    name: bump overlay digest
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # The `main` ruleset refuses pushes whose commit has not passed hygiene.
+    # Its only bypass actor is "deploy keys", so this job pushes over SSH with
+    # a write deploy key scoped to this repository (ADR-0012 rev 2026-09-17).
+    # The key lives in the `overlay-bump` environment, so only this job sees
+    # it, and the job runs nothing but the pinned checkout action and a shell
+    # script. GITHUB_TOKEN stays read-only in every job.
+    environment: overlay-bump
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ssh-key: ${{ secrets.OVERLAY_BUMP_DEPLOY_KEY }}
+      - name: Bump overlay image tag
         env:
-          DIGEST: ${{ steps.build.outputs.digest }}
+          DIGEST: ${{ needs.image.outputs.digest }}
         run: |
           set -euo pipefail
           # shellcheck disable=SC1091
           source scripts/versions.env
           tool="$(mktemp -d)"   # outside the checkout so nothing stray is committed
           curl -fsSL -o "$tool/kustomize.tgz" "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${PIN_KUSTOMIZE}/kustomize_v${PIN_KUSTOMIZE}_linux_amd64.tar.gz"
-          echo "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d  $tool/kustomize.tgz" | sha256sum -c -
+          echo "${PIN_KUSTOMIZE_SHA256_LINUX_AMD64}  $tool/kustomize.tgz" | sha256sum -c -
           tar -xzf "$tool/kustomize.tgz" -C "$tool" kustomize
           overlay=k8s/apps/notebook-api/overlays/hetzner
           (
@@ -143,9 +167,7 @@ jobs:
             echo "overlay already at ${GITHUB_SHA}"
             exit 0
           fi
-          git commit -m "chore(notebook-api): deploy ${GITHUB_SHA}
-
-          [skip ci]"
+          git commit -m "chore(notebook-api): deploy ${GITHUB_SHA}"
           # main may have moved while the image built; rebase the one-file
           # commit and retry a few times before giving up.
           for attempt in 1 2 3; do

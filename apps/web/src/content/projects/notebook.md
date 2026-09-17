@@ -4,7 +4,7 @@ section: software
 order: 10
 status: active
 stack: [Go, PostgreSQL, WebCrypto, Argon2id]
-summary: "Paste text, code or an image behind a passcode; the server stores ciphertext it cannot read and forgets it after a week."
+summary: "Paste text, code or an image behind a passcode or a short code+PIN; the server stores ciphertext it cannot read and forgets it within 5h18m."
 updated: 2026-09-16
 ---
 
@@ -16,7 +16,7 @@ drive or trusting the thing in the middle. The requirements are small:
 - a passcode is the only credential; no accounts;
 - the same passcode from any device opens the same notebook;
 - the server never sees plaintext;
-- items expire on their own (default 24 hours, maximum 7 days).
+- items expire on their own (UI offers only 3m, 8m, 18m, 38m, 1h18m, 2h 38m, 5h18m).
 
 ## Design
 

@@ -18,3 +18,9 @@
 | M4 notebook | r1: 7 FAIL ([m4-r1.md](m4-r1.md)), r2: **8 PASS** ([m4-r2.md](m4-r2.md)) | 2026-09-16 | passed |
 | M5 hardening | r1: 7 FAIL ([m5-r1.md](m5-r1.md)), r2: 7 FAIL ([m5-r2.md](m5-r2.md)), r3: **8 PASS** ([m5-r3.md](m5-r3.md)) | 2026-09-16 | passed |
 | M6 Authentik OIDC | r1: 7 FAIL ([m6-r1.md](m6-r1.md)), r2: **8 PASS** ([m6-r2.md](m6-r2.md)) | 2026-09-16 | passed |
+| M7 ship and hand over | r1: 6 FAIL ([m7-r1.md](m7-r1.md)), r2: **8 PASS** ([m7-r2.md](m7-r2.md)) | 2026-09-17 | passed |
+| M8 Zen tokens | r1: **8 PASS** ([m8-r1.md](m8-r1.md)) | 2026-09-17 | passed |
+| M9 PIN + TTL + lockout | r1: **8 PASS** ([m9-r1.md](m9-r1.md)) | 2026-09-17 | passed |
+| M10 subnet usable + colour | r1: **8 PASS** ([m10-r1.md](m10-r1.md)) | 2026-09-17 | passed |
+| M11 editor | r1: **8 PASS** ([m11-r1.md](m11-r1.md)) | 2026-09-17 | passed |
+| M12 DrealNote | r1: **8 PASS** ([m12-r1.md](m12-r1.md)) | 2026-09-17 | passed |
